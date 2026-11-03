@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f8f3">
+    <meta name="description" content="Acesso ao Sistema de Gestão de Clínica Veterinária.">
+    <title>Acesso | Focinho &amp; Cia</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="welcome-panel" aria-label="Clínica veterinária Focinho e Cia">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">✿</span>
+          <span>Focinho <span class="brand-amp">&amp;</span> Cia</span>
+        </div>
+        <div class="welcome-copy">
+          <span class="eyebrow">CUIDADO QUE ACOLHE</span>
+          <h1>Um lugar especial para quem faz parte da família.</h1>
+          <p>Gestão simples para cuidar melhor de cada história e de cada focinho.</p>
+        </div>
+        <div class="paw-decoration" aria-hidden="true">🐾</div>
+        <div class="welcome-footer">SGCV <span>·</span> Sistema de Gestão de Clínica Veterinária</div>
+      </section>
+
+      <section class="form-panel" aria-label="Acesso ao sistema">
+        <div class="form-wrap">
+          <div class="mobile-brand brand">
+            <span class="brand-mark" aria-hidden="true">✿</span>
+            <span>Focinho <span class="brand-amp">&amp;</span> Cia</span>
+          </div>
+
+          <div id="auth-view">
+            <div class="form-heading">
+              <span class="eyebrow">BEM-VINDA(O) DE VOLTA</span>
+              <h2 id="form-title">Acesse sua conta</h2>
+              <p id="form-description">Entre com seus dados para continuar.</p>
+            </div>
+
+            <div class="tabs" role="tablist" aria-label="Acesso ou cadastro">
+              <button class="tab is-active" id="login-tab" type="button" role="tab"
+                aria-selected="true" aria-controls="login-panel">Entrar</button>
+              <button class="tab" id="register-tab" type="button" role="tab"
+                aria-selected="false" aria-controls="register-panel">Criar conta</button>
+            </div>
+
+            <div id="form-message" class="form-message" role="status" aria-live="polite"></div>
+
+            <form id="login-panel" class="auth-form" autocomplete="on">
+              <div class="field">
+                <label for="login-username">Usuário</label>
+                <input id="login-username" name="username" type="text" placeholder="Seu nome de usuário"
+                  minlength="3" maxlength="30" autocomplete="username" required>
+              </div>
+              <div class="field">
+                <label for="login-password">Senha</label>
+                <input id="login-password" name="password" type="password" placeholder="Sua senha"
+                  minlength="8" maxlength="128" autocomplete="current-password" required>
+              </div>
+              <button class="primary-button" type="submit">Entrar <span aria-hidden="true">→</span></button>
+            </form>
+
+            <form id="register-panel" class="auth-form" autocomplete="on" hidden>
+              <div class="field">
+                <label for="register-name">Nome completo</label>
+                <input id="register-name" name="name" type="text" placeholder="Como podemos te chamar?"
+                  minlength="2" maxlength="80" autocomplete="name" required>
+              </div>
+              <div class="field">
+                <label for="register-username">Login</label>
+                <input id="register-username" name="username" type="text" placeholder="Escolha seu usuário"
+                  minlength="3" maxlength="30" pattern="[A-Za-z0-9._-]{3,30}"
+                  title="Use de 3 a 30 letras, números, pontos, traços ou sublinhados."
+                  autocomplete="username" required>
+              </div>
+              <div class="field">
+                <label for="register-password">Senha</label>
+                <input id="register-password" name="password" type="password" placeholder="Mínimo de 8 caracteres"
+                  minlength="8" maxlength="128" autocomplete="new-password" required>
+              </div>
+              <div class="field">
+                <label for="register-profile">Perfil</label>
+                <select id="register-profile" name="profile" required>
+                  <option value="" disabled selected>Selecione seu perfil</option>
+                  <option value="Veterinário">Veterinário</option>
+                  <option value="Recepcionista">Recepcionista</option>
+                </select>
+              </div>
+              <button class="primary-button" type="submit">Cadastrar <span aria-hidden="true">→</span></button>
+            </form>
+            <p class="form-note"><span aria-hidden="true">♡</span> Feito com carinho para cuidar de quem você ama.</p>
+          </div>
+
+          <div id="signed-in-view" class="signed-in-view" hidden>
+            <span class="success-mark" aria-hidden="true">✓</span>
+            <span class="eyebrow">ACESSO REALIZADO</span>
+            <h2>Olá, <span id="signed-in-name"></span>!</h2>
+            <p>Você entrou como <strong id="signed-in-profile"></strong>.</p>
+            <button id="logout-button" class="secondary-button" type="button">Sair da conta</button>
+          </div>
+        </div>
+        <footer class="form-footer">Cuidando de quem cuida. <span>© SGCV</span></footer>
+      </section>
+    </main>
+  </body>
+</html>

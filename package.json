@@ -1,0 +1,9 @@
+{
+  "name": "sgcv",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Sistema de Gestão de Clínica Veterinária - telas de acesso",
+  "scripts": {
+    "start": "node server.js"
+  }
+}
