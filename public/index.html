@@ -3,41 +3,40 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#f4f8f3">
+    <meta name="theme-color" content="#f5f7f6">
     <meta name="description" content="Acesso ao Sistema de Gestão de Clínica Veterinária.">
-    <title>Acesso | Focinho &amp; Cia</title>
-    <link rel="stylesheet" href="/styles.css">
-    <script src="/app.js" defer></script>
+    <title>Acesso | SGCV</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
   </head>
   <body>
-    <main class="page-shell">
-      <section class="welcome-panel" aria-label="Clínica veterinária Focinho e Cia">
-        <div class="brand">
-          <span class="brand-mark" aria-hidden="true">✿</span>
-          <span>Focinho <span class="brand-amp">&amp;</span> Cia</span>
+    <main class="login-layout">
+      <aside class="login-sidebar" aria-label="Sistema de Gestão de Clínica Veterinária">
+        <a class="brand" href="/" aria-label="SGCV, página inicial">
+          <span class="brand-mark" aria-hidden="true">S</span>
+          <span>SGCV</span>
+        </a>
+        <div class="sidebar-copy">
+          <p class="eyebrow">GESTÃO VETERINÁRIA</p>
+          <h1>Cuidado organizado, em cada etapa.</h1>
+          <p>Um espaço dedicado à rotina da clínica e ao cuidado dos seus pacientes.</p>
         </div>
-        <div class="welcome-copy">
-          <span class="eyebrow">CUIDADO QUE ACOLHE</span>
-          <h1>Um lugar especial para quem faz parte da família.</h1>
-          <p>Gestão simples para cuidar melhor de cada história e de cada focinho.</p>
-        </div>
-        <div class="paw-decoration" aria-hidden="true">🐾</div>
-        <div class="welcome-footer">SGCV <span>·</span> Sistema de Gestão de Clínica Veterinária</div>
-      </section>
+        <p class="sidebar-footer">Sistema de Gestão de Clínica Veterinária</p>
+      </aside>
 
-      <section class="form-panel" aria-label="Acesso ao sistema">
-        <div class="form-wrap">
-          <div class="mobile-brand brand">
-            <span class="brand-mark" aria-hidden="true">✿</span>
-            <span>Focinho <span class="brand-amp">&amp;</span> Cia</span>
-          </div>
+      <section class="login-main" aria-label="Acesso ao sistema">
+        <div class="login-card">
+          <a class="mobile-brand brand" href="/" aria-label="SGCV, página inicial">
+            <span class="brand-mark" aria-hidden="true">S</span>
+            <span>SGCV</span>
+          </a>
 
           <div id="auth-view">
-            <div class="form-heading">
-              <span class="eyebrow">BEM-VINDA(O) DE VOLTA</span>
+            <header class="form-heading">
+              <p class="eyebrow">BEM-VINDA(O)</p>
               <h2 id="form-title">Acesse sua conta</h2>
-              <p id="form-description">Entre com seus dados para continuar.</p>
-            </div>
+              <p id="form-description">Informe seu login e senha para continuar.</p>
+            </header>
 
             <div class="tabs" role="tablist" aria-label="Acesso ou cadastro">
               <button class="tab is-active" id="login-tab" type="button" role="tab"
@@ -50,8 +49,8 @@
 
             <form id="login-panel" class="auth-form" autocomplete="on">
               <div class="field">
-                <label for="login-username">Usuário</label>
-                <input id="login-username" name="username" type="text" placeholder="Seu nome de usuário"
+                <label for="login-username">Login</label>
+                <input id="login-username" name="username" type="text" placeholder="Seu login"
                   minlength="3" maxlength="30" autocomplete="username" required>
               </div>
               <div class="field">
@@ -59,18 +58,18 @@
                 <input id="login-password" name="password" type="password" placeholder="Sua senha"
                   minlength="8" maxlength="128" autocomplete="current-password" required>
               </div>
-              <button class="primary-button" type="submit">Entrar <span aria-hidden="true">→</span></button>
+              <button class="primary-button" type="submit">Entrar</button>
             </form>
 
             <form id="register-panel" class="auth-form" autocomplete="on" hidden>
               <div class="field">
                 <label for="register-name">Nome completo</label>
-                <input id="register-name" name="name" type="text" placeholder="Como podemos te chamar?"
+                <input id="register-name" name="name" type="text" placeholder="Seu nome completo"
                   minlength="2" maxlength="80" autocomplete="name" required>
               </div>
               <div class="field">
                 <label for="register-username">Login</label>
-                <input id="register-username" name="username" type="text" placeholder="Escolha seu usuário"
+                <input id="register-username" name="username" type="text" placeholder="Escolha seu login"
                   minlength="3" maxlength="30" pattern="[A-Za-z0-9._-]{3,30}"
                   title="Use de 3 a 30 letras, números, pontos, traços ou sublinhados."
                   autocomplete="username" required>
@@ -88,20 +87,21 @@
                   <option value="Recepcionista">Recepcionista</option>
                 </select>
               </div>
-              <button class="primary-button" type="submit">Cadastrar <span aria-hidden="true">→</span></button>
+              <button class="primary-button" type="submit">Cadastrar</button>
             </form>
-            <p class="form-note"><span aria-hidden="true">♡</span> Feito com carinho para cuidar de quem você ama.</p>
           </div>
 
           <div id="signed-in-view" class="signed-in-view" hidden>
-            <span class="success-mark" aria-hidden="true">✓</span>
-            <span class="eyebrow">ACESSO REALIZADO</span>
-            <h2>Olá, <span id="signed-in-name"></span>!</h2>
+            <p class="eyebrow">ACESSO REALIZADO</p>
+            <h2>Olá, <span id="signed-in-name"></span></h2>
             <p>Você entrou como <strong id="signed-in-profile"></strong>.</p>
             <button id="logout-button" class="secondary-button" type="button">Sair da conta</button>
           </div>
         </div>
-        <footer class="form-footer">Cuidando de quem cuida. <span>© SGCV</span></footer>
+        <footer class="login-footer">
+          <span>SGCV</span>
+          <span>Sistema de Gestão de Clínica Veterinária</span>
+        </footer>
       </section>
     </main>
   </body>

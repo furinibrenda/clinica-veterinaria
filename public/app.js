@@ -21,7 +21,7 @@ function selectTab(tab) {
   registerForm.hidden = isLogin;
   document.querySelector("#form-title").textContent = isLogin ? "Acesse sua conta" : "Crie sua conta";
   document.querySelector("#form-description").textContent = isLogin
-    ? "Entre com seus dados para continuar."
+    ? "Informe seu login e senha para continuar."
     : "Preencha seus dados para fazer parte da equipe.";
   showMessage("");
 }
