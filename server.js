@@ -1,35 +1,12 @@
 const http = require("node:http");
 const fs = require("node:fs");
 const path = require("node:path");
-const {
-  randomBytes,
-  scryptSync,
-  timingSafeEqual,
-} = require("node:crypto");
+const { createAccessControl } = require("./src/middleware/accessControl");
+const { getSession } = require("./src/services/authService");
+const { handleAuthRoute } = require("./src/routes/authRoutes");
 
 const PORT = Number(process.env.PORT) || 3000;
 const PUBLIC_DIR = path.join(__dirname, "public");
-const DATA_DIR = path.join(__dirname, "data");
-const USERS_FILE = path.join(DATA_DIR, "users.json");
-const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
-const sessions = new Map();
-
-fs.mkdirSync(DATA_DIR, { recursive: true });
-if (!fs.existsSync(USERS_FILE)) {
-  fs.writeFileSync(USERS_FILE, "[]\n", "utf8");
-}
-
-function readUsers() {
-  const users = JSON.parse(fs.readFileSync(USERS_FILE, "utf8"));
-  if (!Array.isArray(users)) {
-    throw new Error("O arquivo de usuários precisa conter uma lista.");
-  }
-  return users;
-}
-
-function writeUsers(users) {
-  fs.writeFileSync(USERS_FILE, `${JSON.stringify(users, null, 2)}\n`, "utf8");
-}
 
 function sendJson(res, statusCode, payload, headers = {}) {
   res.writeHead(statusCode, {
@@ -57,7 +34,7 @@ function readJsonBody(req) {
       try {
         const parsed = JSON.parse(body);
         if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-          throw Object.assign(new Error("Envie um objeto JSON válido."), { status: 400 });
+          throw new Error("O corpo precisa ser um objeto JSON.");
         }
         resolve(parsed);
       } catch {
@@ -68,128 +45,10 @@ function readJsonBody(req) {
   });
 }
 
-function publicUser(user) {
-  return { name: user.name, login: user.login, profile: user.profile };
-}
-
-function sessionCookie(token, req, maxAge) {
-  const secure = req.socket.encrypted ? "; Secure" : "";
-  return `sgcv_session=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${maxAge}${secure}`;
-}
-
-function getSession(req) {
-  const cookies = req.headers.cookie || "";
-  const token = cookies
-    .split(";")
-    .map((cookie) => cookie.trim())
-    .find((cookie) => cookie.startsWith("sgcv_session="))
-    ?.slice("sgcv_session=".length);
-
-  if (!token) return null;
-
-  const session = sessions.get(token);
-  if (!session) return null;
-  if (session.expiresAt <= Date.now()) {
-    sessions.delete(token);
-    return null;
-  }
-  return session;
-}
-
-function validateCredentials(login, password) {
-  return (
-    typeof login === "string" &&
-    /^[a-zA-Z0-9._-]{3,30}$/.test(login) &&
-    typeof password === "string" &&
-    password.length >= 8 &&
-    password.length <= 128
-  );
-}
+const { requireAuth, requireProfile } = createAccessControl(getSession, sendJson);
 
 async function handleApi(req, res, url) {
-  if (req.method === "POST" && url.pathname === "/api/register") {
-    const body = await readJsonBody(req);
-    const name = typeof body.name === "string" ? body.name.trim() : "";
-    const login = typeof body.login === "string" ? body.login.trim().toLowerCase() : "";
-    const password = body.password;
-    const profile = body.profile;
-
-    if (name.length < 2 || name.length > 80) {
-      return sendJson(res, 400, { error: "Informe um nome com 2 a 80 caracteres." });
-    }
-    if (!validateCredentials(login, password)) {
-      return sendJson(res, 400, {
-        error: "O login deve ter 3 a 30 caracteres válidos e a senha, 8 a 128 caracteres.",
-      });
-    }
-    if (!["Veterinário", "Recepcionista"].includes(profile)) {
-      return sendJson(res, 400, { error: "Selecione um perfil válido." });
-    }
-
-    const users = readUsers();
-    if (users.some((user) => user.login === login)) {
-      return sendJson(res, 409, { error: "Este login já está cadastrado." });
-    }
-
-    const salt = randomBytes(16).toString("hex");
-    const passwordHash = scryptSync(password, salt, 64).toString("hex");
-    users.push({ name, login, profile, salt, passwordHash });
-    writeUsers(users);
-
-    return sendJson(res, 201, { message: "Cadastro realizado. Você já pode entrar." });
-  }
-
-  if (req.method === "POST" && url.pathname === "/api/login") {
-    const body = await readJsonBody(req);
-    const login = typeof body.login === "string" ? body.login.trim().toLowerCase() : "";
-    const password = body.password;
-
-    if (!validateCredentials(login, password)) {
-      return sendJson(res, 400, {
-        error: "Informe um login válido e uma senha com pelo menos 8 caracteres.",
-      });
-    }
-
-    const user = readUsers().find((item) => item.login === login);
-    if (!user) {
-      return sendJson(res, 401, { error: "Login ou senha incorretos." });
-    }
-
-    const suppliedHash = scryptSync(password, user.salt, 64);
-    const storedHash = Buffer.from(user.passwordHash, "hex");
-    if (storedHash.length !== suppliedHash.length || !timingSafeEqual(suppliedHash, storedHash)) {
-      return sendJson(res, 401, { error: "Login ou senha incorretos." });
-    }
-
-    const token = randomBytes(32).toString("hex");
-    sessions.set(token, { user, expiresAt: Date.now() + SESSION_TTL_MS });
-    return sendJson(
-      res,
-      200,
-      { user: publicUser(user) },
-      { "Set-Cookie": sessionCookie(token, req, SESSION_TTL_MS / 1000) },
-    );
-  }
-
-  if (req.method === "GET" && url.pathname === "/api/session") {
-    const session = getSession(req);
-    return sendJson(res, 200, { user: session ? publicUser(session.user) : null });
-  }
-
-  if (req.method === "POST" && url.pathname === "/api/logout") {
-    const cookies = req.headers.cookie || "";
-    const token = cookies
-      .split(";")
-      .map((cookie) => cookie.trim())
-      .find((cookie) => cookie.startsWith("sgcv_session="))
-      ?.slice("sgcv_session=".length);
-    if (token) sessions.delete(token);
-
-    return sendJson(res, 200, { message: "Sessão encerrada." }, {
-      "Set-Cookie": sessionCookie("", req, 0),
-    });
-  }
-
+  if (await handleAuthRoute(req, res, url, { sendJson, readJsonBody })) return;
   return sendJson(res, 404, { error: "Rota não encontrada." });
 }
 
@@ -256,6 +115,10 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, () => {
-  console.log(`SGCV disponível em http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  server.listen(PORT, () => {
+    console.log(`SGCV disponível em http://localhost:${PORT}`);
+  });
+}
+
+module.exports = { requireAuth, requireProfile, server };

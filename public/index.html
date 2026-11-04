@@ -19,7 +19,7 @@
         <div class="sidebar-copy">
           <p class="eyebrow">GESTÃO VETERINÁRIA</p>
           <h1>Cuidado organizado, em cada etapa.</h1>
-          <p>Um espaço dedicado à rotina da clínica e ao cuidado dos seus pacientes.</p>
+          <p>Um espaço dedicado à rotina da clínica e ao cuidado dos seus pets.</p>
         </div>
         <p class="sidebar-footer">Sistema de Gestão de Clínica Veterinária</p>
       </aside>
@@ -38,56 +38,20 @@
               <p id="form-description">Informe seu login e senha para continuar.</p>
             </header>
 
-            <div class="tabs" role="tablist" aria-label="Acesso ou cadastro">
-              <button class="tab is-active" id="login-tab" type="button" role="tab"
-                aria-selected="true" aria-controls="login-panel">Entrar</button>
-              <button class="tab" id="register-tab" type="button" role="tab"
-                aria-selected="false" aria-controls="register-panel">Criar conta</button>
-            </div>
-
             <div id="form-message" class="form-message" role="status" aria-live="polite"></div>
 
             <form id="login-panel" class="auth-form" autocomplete="on">
               <div class="field">
                 <label for="login-username">Login</label>
                 <input id="login-username" name="username" type="text" placeholder="Seu login"
-                  minlength="3" maxlength="30" autocomplete="username" required>
+                  maxlength="30" autocomplete="username">
               </div>
               <div class="field">
                 <label for="login-password">Senha</label>
                 <input id="login-password" name="password" type="password" placeholder="Sua senha"
-                  minlength="8" maxlength="128" autocomplete="current-password" required>
+                  maxlength="128" autocomplete="current-password">
               </div>
               <button class="primary-button" type="submit">Entrar</button>
-            </form>
-
-            <form id="register-panel" class="auth-form" autocomplete="on" hidden>
-              <div class="field">
-                <label for="register-name">Nome completo</label>
-                <input id="register-name" name="name" type="text" placeholder="Seu nome completo"
-                  minlength="2" maxlength="80" autocomplete="name" required>
-              </div>
-              <div class="field">
-                <label for="register-username">Login</label>
-                <input id="register-username" name="username" type="text" placeholder="Escolha seu login"
-                  minlength="3" maxlength="30" pattern="[A-Za-z0-9._-]{3,30}"
-                  title="Use de 3 a 30 letras, números, pontos, traços ou sublinhados."
-                  autocomplete="username" required>
-              </div>
-              <div class="field">
-                <label for="register-password">Senha</label>
-                <input id="register-password" name="password" type="password" placeholder="Mínimo de 8 caracteres"
-                  minlength="8" maxlength="128" autocomplete="new-password" required>
-              </div>
-              <div class="field">
-                <label for="register-profile">Perfil</label>
-                <select id="register-profile" name="profile" required>
-                  <option value="" disabled selected>Selecione seu perfil</option>
-                  <option value="Veterinário">Veterinário</option>
-                  <option value="Recepcionista">Recepcionista</option>
-                </select>
-              </div>
-              <button class="primary-button" type="submit">Cadastrar</button>
             </form>
           </div>
 

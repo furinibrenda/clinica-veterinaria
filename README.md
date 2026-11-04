@@ -5,36 +5,35 @@ Autora: Brenda Furini Cardoso
 
 ## Descrição
 
-Sistema da Clínica Veterinária Focinho & Cia que centraliza o cadastro de tutores e animais, o agendamento de consultas sem conflito de horário e o registro de atendimentos e diagnósticos.
-
-**Atores:** Recepcionista e Veterinário.
+Sistema da Clínica Veterinária Focinho & Cia para gestão de tutores, animais,
+consultas e atendimentos. Os perfis de acesso são Recepcionista e Veterinário.
 
 ## Tecnologias
 
-JavaScript, Node.js, HTML e CSS.
+JavaScript, Node.js, SQLite (`better-sqlite3`) e `bcryptjs`.
 
-## Primeiros passos
+## Requisitos
 
-Esta versão inicial contém somente as telas de cadastro e login para os perfis
-Veterinário e Recepcionista. Os usuários são salvos localmente em
-`data/users.json`, e as senhas são armazenadas com hash. As sessões são mantidas
-em memória por até 12 horas e encerradas ao parar o servidor.
+- Node.js 20 ou superior
+- npm
 
-### Requisitos
+## Como executar
 
-- Node.js 18 ou superior
-- Visual Studio Code (opcional, recomendado para editar o projeto)
+1. Abra a pasta do projeto no terminal.
+2. No PowerShell, instale as dependências com `npm.cmd install`.
+3. Crie os acessos iniciais com `npm.cmd run seed`.
+4. Anote os logins e senhas exibidos no terminal. As senhas são aleatórias,
+   mostradas somente quando as contas são criadas e armazenadas no banco apenas
+   como hash bcrypt.
+5. Inicie o sistema com `npm.cmd start`.
+6. Acesse [http://localhost:3000](http://localhost:3000).
 
-### Como executar
+O banco SQLite é criado em `data/sgcv.db`. O script de seed pode ser executado
+novamente sem alterar as senhas de contas já criadas. Não remova o banco para
+recuperar uma senha: isso também excluiria os demais dados. O arquivo legado
+`data/users.json` é mantido intacto, mas não é mais usado para autenticação. Os
+hashes legados não podem ser convertidos para bcrypt sem as senhas originais;
+por isso, os acessos antigos precisam ser recriados pelo seed.
 
-1. Abra a pasta do projeto no VS Code.
-2. No menu **Terminal > Novo Terminal**, execute `npm start`.
-3. Acesse [http://localhost:3000](http://localhost:3000) no navegador.
-4. Se necessário, defina outra porta antes de iniciar: no PowerShell,
-   `$env:PORT=3001; npm start`.
-
-Não é necessário instalar dependências. Para começar, crie uma conta com nome,
-login, senha de pelo menos 8 caracteres e perfil; depois, entre com o login e a
-senha cadastrados. O arquivo `data/users.json` é criado automaticamente e não é
-versionado. A sessão é encerrada ao parar o servidor.
-
+As sessões expiram após 30 minutos sem atividade. O cadastro público foi
+removido; a criação de contas é feita pelo seed.

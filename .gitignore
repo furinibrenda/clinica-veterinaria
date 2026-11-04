@@ -1,2 +1,4 @@
 node_modules/
 data/users.json
+data/*.db
+data/*.db-*
