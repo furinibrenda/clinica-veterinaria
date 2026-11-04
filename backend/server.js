@@ -6,7 +6,7 @@ const { getSession } = require("./src/services/authService");
 const { handleAuthRoute } = require("./src/routes/authRoutes");
 
 const PORT = Number(process.env.PORT) || 3000;
-const PUBLIC_DIR = path.join(__dirname, "public");
+const PUBLIC_DIR = path.join(__dirname, "../frontend");
 
 function sendJson(res, statusCode, payload, headers = {}) {
   res.writeHead(statusCode, {
