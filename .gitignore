@@ -1,4 +1,4 @@
 node_modules/
-data/users.json
-data/*.db
-data/*.db-*
+/backend/data/users.json
+/backend/data/*.db
+/backend/data/*.db-*
