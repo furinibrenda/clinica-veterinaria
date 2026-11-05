@@ -10,7 +10,7 @@ consultas e atendimentos. Os perfis de acesso são Recepcionista e Veterinário.
 
 ## Tecnologias
 
-JavaScript, Node.js, SQLite (`better-sqlite3`) e `bcryptjs`.
+JavaScript, Node.js, Express 5, SQLite (`better-sqlite3`) e `bcryptjs`.
 
 ## Requisitos
 
@@ -19,7 +19,7 @@ JavaScript, Node.js, SQLite (`better-sqlite3`) e `bcryptjs`.
 
 ## Como executar
 
-1. Abra a pasta do projeto no terminal.
+1. Abra a pasta `backend` do projeto no terminal (`cd backend`).
 2. No PowerShell, instale as dependências com `npm.cmd install`.
 3. Crie os acessos iniciais com `npm.cmd run seed`.
 4. Anote os logins e senhas exibidos no terminal. As senhas são aleatórias,
@@ -37,3 +37,6 @@ por isso, os acessos antigos precisam ser recriados pelo seed.
 
 As sessões expiram após 30 minutos sem atividade. O cadastro público foi
 removido; a criação de contas é feita pelo seed.
+
+Veja [a documentação do backend](backend/README.md) para a estrutura em camadas,
+configuração, contratos da API e testes (`npm.cmd test` na pasta `backend`).
