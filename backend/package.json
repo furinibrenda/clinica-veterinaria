@@ -5,10 +5,19 @@
   "description": "Sistema de Gestão de Clínica Veterinária",
   "scripts": {
     "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test",
     "seed": "node seed.js"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
-    "better-sqlite3": "^12.2.0"
+    "better-sqlite3": "^12.2.0",
+    "express": "^5.3.0"
+  },
+  "devDependencies": {
+    "supertest": "^7.3.1"
   }
 }
