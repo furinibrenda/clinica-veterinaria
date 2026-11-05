@@ -1,26 +1,24 @@
-function createAccessControl(getSession, sendJson) {
-  function requireAuth(req, res) {
-    const authenticated = getSession(req);
-    if (!authenticated) {
-      sendJson(res, 401, { error: "Acesso negado" });
-      return null;
-    }
-    return authenticated;
-  }
+const { getSession } = require("../services/sessionService");
+const { getSessionToken, setSessionCookie } = require("../utils/sessionCookie");
 
-  function requireProfile(...allowedProfiles) {
-    return (req, res) => {
-      const authenticated = requireAuth(req, res);
-      if (!authenticated) return null;
-      if (!allowedProfiles.includes(authenticated.user.perfil)) {
-        sendJson(res, 403, { error: "Acesso negado" });
-        return null;
-      }
-      return authenticated;
-    };
-  }
+function requireAuth(req, res, next) {
+  const authenticated = getSession(getSessionToken(req));
+  if (!authenticated) return res.status(401).json({ error: "Acesso negado" });
 
-  return { requireAuth, requireProfile };
+  req.user = authenticated.user;
+  setSessionCookie(res, req, authenticated.token);
+  next();
 }
 
-module.exports = { createAccessControl };
+// Use after requireAuth so each request resolves its session only once.
+function requireProfile(...allowedProfiles) {
+  return (req, res, next) => {
+    if (!req.user) return res.status(401).json({ error: "Acesso negado" });
+    if (!allowedProfiles.includes(req.user.perfil)) {
+      return res.status(403).json({ error: "Acesso negado" });
+    }
+    next();
+  };
+}
+
+module.exports = { requireAuth, requireProfile };
