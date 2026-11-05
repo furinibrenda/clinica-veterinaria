@@ -2,10 +2,10 @@ const fs = require("node:fs");
 const path = require("node:path");
 const Database = require("better-sqlite3");
 
-const databasePath = path.resolve(
+const databasePath = process.env.SGCV_DB_PATH === ":memory:" ? ":memory:" : path.resolve(
   process.env.SGCV_DB_PATH || path.join(__dirname, "data", "sgcv.db"),
 );
-fs.mkdirSync(path.dirname(databasePath), { recursive: true });
+if (databasePath !== ":memory:") fs.mkdirSync(path.dirname(databasePath), { recursive: true });
 
 const db = new Database(databasePath);
 db.pragma("foreign_keys = ON");
