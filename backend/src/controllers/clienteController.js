@@ -1,6 +1,7 @@
 const {
   cadastrarCliente: criarCliente,
   listarClientes: buscarClientes,
+  inativarCliente: marcarClienteInativo,
 } = require("../services/clienteService");
 
 function listarClientes(req, res) {
@@ -24,4 +25,21 @@ function cadastrarCliente(req, res, next) {
   }
 }
 
-module.exports = { cadastrarCliente, listarClientes };
+function inativarCliente(req, res, next) {
+  const id = Number(req.params.id);
+  if (!Number.isSafeInteger(id) || id < 1) {
+    return res.status(400).json({ error: "Identificador de cliente inválido." });
+  }
+
+  try {
+    marcarClienteInativo(id);
+    res.json({ message: "Cliente inativado com sucesso." });
+  } catch (error) {
+    if (error.status === 404) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    next(error);
+  }
+}
+
+module.exports = { cadastrarCliente, listarClientes, inativarCliente };

@@ -9,6 +9,12 @@ const inserirCliente = db.prepare(`
   INSERT INTO clientes (nome, cpf, telefone, email, endereco)
   VALUES (@nome, @cpf, @telefone, @email, @endereco)
 `);
+const inativarClientePorId = db.prepare(`
+  UPDATE clientes
+  SET ativo = 0
+  WHERE id = ?
+`);
+const clientePorId = db.prepare("SELECT id FROM clientes WHERE id = ?");
 const buscarClientes = db.prepare(`
   SELECT id, nome, cpf, telefone, ativo
   FROM clientes
@@ -75,4 +81,12 @@ function listarClientes(busca = "") {
   });
 }
 
-module.exports = { cadastrarCliente, listarClientes };
+function inativarCliente(id) {
+  // TODO(RN-10): Quando a tabela de consultas existir, impedir cliente com consulta "Agendada".
+  const resultado = inativarClientePorId.run(id);
+  if (resultado.changes === 0 && !clientePorId.get(id)) {
+    throw clienteError("Cliente não encontrado.", 404);
+  }
+}
+
+module.exports = { cadastrarCliente, listarClientes, inativarCliente };

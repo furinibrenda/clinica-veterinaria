@@ -33,6 +33,7 @@ test("cadastro e listagem de clientes permitem apenas Recepcionista", async () =
   assert.equal((await visitante.get("/clientes")).status, 302);
   assert.equal((await visitante.get("/clientes/novo")).status, 302);
   assert.equal((await visitante.post("/api/clientes").send(dadosCliente)).status, 401);
+  assert.equal((await visitante.patch("/api/clientes/1/inativar")).status, 401);
 
   const recepcionista = request.agent(app);
   assert.equal(
@@ -47,6 +48,26 @@ test("cadastro e listagem de clientes permitem apenas Recepcionista", async () =
   const cadastro = await recepcionista.post("/api/clientes").send(dadosCliente);
   assert.equal(cadastro.status, 201);
   assert.equal(cadastro.body.cliente.nome, dadosCliente.nome);
+  const totalClientesAntesInativar = db.prepare("SELECT COUNT(*) AS total FROM clientes").get().total;
+  const dadosAntesInativar = db.prepare(
+    "SELECT nome, cpf, telefone, email, endereco FROM clientes WHERE id = ?",
+  ).get(cadastro.body.cliente.id);
+  assert.equal((await recepcionista.patch(`/api/clientes/${cadastro.body.cliente.id}/inativar`)).status, 200);
+  const clienteInativado = db.prepare(
+    "SELECT nome, cpf, telefone, email, endereco, ativo FROM clientes WHERE id = ?",
+  ).get(cadastro.body.cliente.id);
+  assert.deepEqual(
+    {
+      nome: clienteInativado.nome,
+      cpf: clienteInativado.cpf,
+      telefone: clienteInativado.telefone,
+      email: clienteInativado.email,
+      endereco: clienteInativado.endereco,
+      ativo: clienteInativado.ativo,
+    },
+    { ...dadosAntesInativar, ativo: 0 },
+  );
+  assert.equal(db.prepare("SELECT COUNT(*) AS total FROM clientes").get().total, totalClientesAntesInativar);
   assert.equal((await recepcionista.post("/api/clientes").send(dadosCliente)).status, 409);
   assert.equal(
     (await recepcionista.post("/api/clientes").send({ ...dadosCliente, cpf: "11111111111" })).status,
@@ -61,7 +82,7 @@ test("cadastro e listagem de clientes permitem apenas Recepcionista", async () =
   const buscaNome = await recepcionista.get("/api/clientes").query({ busca: "Ana" });
   assert.equal(buscaNome.status, 200);
   assert.deepEqual(buscaNome.body.clientes.map(({ nome, ativo }) => ({ nome, ativo })), [
-    { nome: "Ana Silva", ativo: 1 },
+    { nome: "Ana Silva", ativo: 0 },
   ]);
   const buscaCpf = await recepcionista.get("/api/clientes").query({ busca: "123.456" });
   assert.deepEqual(buscaCpf.body.clientes.map(({ nome, ativo }) => ({ nome, ativo })), [
@@ -69,6 +90,8 @@ test("cadastro e listagem de clientes permitem apenas Recepcionista", async () =
   ]);
   assert.equal((await recepcionista.get("/api/clientes").query({ busca: ["Ana", "Bruno"] })).status, 400);
   assert.equal((await recepcionista.get("/api/clientes").query({ busca: "inexistente" })).body.clientes.length, 0);
+  assert.equal((await recepcionista.patch("/api/clientes/99999/inativar")).status, 404);
+  assert.equal((await recepcionista.patch("/api/clientes/0/inativar")).status, 400);
 
   const veterinario = request.agent(app);
   assert.equal(
@@ -79,4 +102,5 @@ test("cadastro e listagem de clientes permitem apenas Recepcionista", async () =
   assert.equal((await veterinario.post("/api/clientes").send(dadosCliente)).status, 403);
   assert.equal((await veterinario.get("/clientes")).status, 302);
   assert.equal((await veterinario.get("/api/clientes")).status, 403);
+  assert.equal((await veterinario.patch("/api/clientes/1/inativar")).status, 403);
 });
