@@ -2,6 +2,7 @@ const loginForm = document.querySelector("#login-panel");
 const message = document.querySelector("#form-message");
 const authView = document.querySelector("#auth-view");
 const signedInView = document.querySelector("#signed-in-view");
+const listClientsLink = document.querySelector("#list-clients-link");
 const registerClientLink = document.querySelector("#register-client-link");
 
 function showMessage(text, isSuccess = false) {
@@ -12,6 +13,7 @@ function showMessage(text, isSuccess = false) {
 function showUser(user) {
   document.querySelector("#signed-in-name").textContent = user.name;
   document.querySelector("#signed-in-profile").textContent = user.profile;
+  listClientsLink.hidden = user.profile !== "Recepcionista";
   registerClientLink.hidden = user.profile !== "Recepcionista";
   authView.hidden = true;
   signedInView.hidden = false;
@@ -56,6 +58,7 @@ document.querySelector("#logout-button").addEventListener("click", async () => {
     const response = await fetch("/api/logout", { method: "POST" });
     if (!response.ok) throw new Error("Falha ao encerrar sessão.");
     signedInView.hidden = true;
+    listClientsLink.hidden = true;
     registerClientLink.hidden = true;
     authView.hidden = false;
     loginForm.reset();

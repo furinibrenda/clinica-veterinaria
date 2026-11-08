@@ -20,7 +20,7 @@ after(() => {
   if (db.open) db.close();
 });
 
-test("cadastro de cliente permite apenas Recepcionista e valida os dados", async () => {
+test("cadastro e listagem de clientes permitem apenas Recepcionista", async () => {
   const dadosCliente = {
     nome: "Ana Silva",
     cpf: "529.982.247-25",
@@ -30,6 +30,7 @@ test("cadastro de cliente permite apenas Recepcionista e valida os dados", async
   };
   const visitante = request.agent(app);
 
+  assert.equal((await visitante.get("/clientes")).status, 302);
   assert.equal((await visitante.get("/clientes/novo")).status, 302);
   assert.equal((await visitante.post("/api/clientes").send(dadosCliente)).status, 401);
 
@@ -38,6 +39,9 @@ test("cadastro de cliente permite apenas Recepcionista e valida os dados", async
     (await recepcionista.post("/api/login").send({ login: "recepcao", password: "senha-teste" })).status,
     200,
   );
+  const paginaClientes = await recepcionista.get("/clientes");
+  assert.equal(paginaClientes.status, 200);
+  assert.match(paginaClientes.text, /Lista de clientes/);
   assert.equal((await recepcionista.get("/clientes/novo")).status, 200);
 
   const cadastro = await recepcionista.post("/api/clientes").send(dadosCliente);
@@ -49,6 +53,23 @@ test("cadastro de cliente permite apenas Recepcionista e valida os dados", async
     400,
   );
 
+  db.prepare(`
+    INSERT INTO clientes (nome, cpf, telefone, ativo)
+    VALUES (?, ?, ?, ?)
+  `).run("Bruno Costa", "12345678909", "11988887777", 0);
+
+  const buscaNome = await recepcionista.get("/api/clientes").query({ busca: "Ana" });
+  assert.equal(buscaNome.status, 200);
+  assert.deepEqual(buscaNome.body.clientes.map(({ nome, ativo }) => ({ nome, ativo })), [
+    { nome: "Ana Silva", ativo: 1 },
+  ]);
+  const buscaCpf = await recepcionista.get("/api/clientes").query({ busca: "123.456" });
+  assert.deepEqual(buscaCpf.body.clientes.map(({ nome, ativo }) => ({ nome, ativo })), [
+    { nome: "Bruno Costa", ativo: 0 },
+  ]);
+  assert.equal((await recepcionista.get("/api/clientes").query({ busca: ["Ana", "Bruno"] })).status, 400);
+  assert.equal((await recepcionista.get("/api/clientes").query({ busca: "inexistente" })).body.clientes.length, 0);
+
   const veterinario = request.agent(app);
   assert.equal(
     (await veterinario.post("/api/login").send({ login: "vet", password: "senha-teste" })).status,
@@ -56,4 +77,6 @@ test("cadastro de cliente permite apenas Recepcionista e valida os dados", async
   );
   assert.equal((await veterinario.get("/clientes/novo")).status, 302);
   assert.equal((await veterinario.post("/api/clientes").send(dadosCliente)).status, 403);
+  assert.equal((await veterinario.get("/clientes")).status, 302);
+  assert.equal((await veterinario.get("/api/clientes")).status, 403);
 });

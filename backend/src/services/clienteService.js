@@ -9,6 +9,14 @@ const inserirCliente = db.prepare(`
   INSERT INTO clientes (nome, cpf, telefone, email, endereco)
   VALUES (@nome, @cpf, @telefone, @email, @endereco)
 `);
+const buscarClientes = db.prepare(`
+  SELECT id, nome, cpf, telefone, ativo
+  FROM clientes
+  WHERE @busca = ''
+    OR nome LIKE @nome
+    OR (@cpf IS NOT NULL AND REPLACE(REPLACE(TRIM(cpf), '.', ''), '-', '') LIKE @cpf)
+  ORDER BY nome COLLATE NOCASE, id
+`);
 
 function clienteError(message, status) {
   const error = new Error(message);
@@ -57,4 +65,14 @@ function cadastrarCliente(dados) {
   }
 }
 
-module.exports = { cadastrarCliente };
+function listarClientes(busca = "") {
+  const termo = busca.trim();
+  const cpf = termo.replace(/\D/g, "");
+  return buscarClientes.all({
+    busca: termo,
+    nome: `%${termo}%`,
+    cpf: cpf ? `%${cpf}%` : null,
+  });
+}
+
+module.exports = { cadastrarCliente, listarClientes };

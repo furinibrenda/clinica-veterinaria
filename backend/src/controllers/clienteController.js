@@ -1,4 +1,16 @@
-const { cadastrarCliente: criarCliente } = require("../services/clienteService");
+const {
+  cadastrarCliente: criarCliente,
+  listarClientes: buscarClientes,
+} = require("../services/clienteService");
+
+function listarClientes(req, res) {
+  const busca = req.query.busca ?? "";
+  if (typeof busca !== "string" || busca.length > 100) {
+    return res.status(400).json({ error: "Informe um termo de busca válido." });
+  }
+
+  res.json({ clientes: buscarClientes(busca) });
+}
 
 function cadastrarCliente(req, res, next) {
   try {
@@ -12,4 +24,4 @@ function cadastrarCliente(req, res, next) {
   }
 }
 
-module.exports = { cadastrarCliente };
+module.exports = { cadastrarCliente, listarClientes };

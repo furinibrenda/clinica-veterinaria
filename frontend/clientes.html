@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f7f6">
+    <meta name="description" content="Lista e busca de clientes da Clínica Veterinária Focinho & Cia.">
+    <title>Clientes | SGCV</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/clientes.js" defer></script>
+  </head>
+  <body class="client-page">
+    <header class="client-header">
+      <a class="brand" href="/" aria-label="SGCV, página inicial">
+        <span class="brand-mark" aria-hidden="true">S</span>
+        <span>SGCV</span>
+      </a>
+      <a class="client-back-link" href="/clientes/novo">Cadastrar cliente</a>
+    </header>
+
+    <main class="client-main">
+      <section class="client-card" aria-labelledby="clients-title">
+        <header class="form-heading">
+          <p class="eyebrow">CLIENTES</p>
+          <h1 id="clients-title">Lista de clientes</h1>
+          <p>Busque pelo nome ou CPF para localizar um cliente.</p>
+        </header>
+
+        <form id="client-search" class="client-search" role="search">
+          <div class="field">
+            <label for="client-search-term">Nome ou CPF</label>
+            <input id="client-search-term" name="busca" type="search" maxlength="100"
+              placeholder="Digite o nome ou CPF">
+          </div>
+          <button class="primary-button" type="submit">Buscar</button>
+        </form>
+
+        <div id="client-list-message" class="form-message" role="status" aria-live="polite"></div>
+
+        <div class="client-table-wrap">
+          <table class="client-table">
+            <thead>
+              <tr>
+                <th scope="col">Nome</th>
+                <th scope="col">CPF</th>
+                <th scope="col">Telefone</th>
+                <th scope="col">Situação</th>
+              </tr>
+            </thead>
+            <tbody id="client-list">
+              <tr><td class="empty-row" colspan="4">Carregando clientes...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer class="login-footer client-footer">
+      <span>SGCV</span>
+      <span>Sistema de Gestão de Clínica Veterinária</span>
+    </footer>
+  </body>
+</html>

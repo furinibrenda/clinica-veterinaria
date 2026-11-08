@@ -382,6 +382,83 @@ button {
   margin-top: 0;
 }
 
+.client-card .form-heading h1 {
+  margin: 0 0 9px;
+  color: var(--color-text);
+  font-size: 28px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+}
+
+.client-search {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.client-search .primary-button {
+  min-width: 120px;
+  margin: 0;
+  padding: 0 20px;
+}
+
+.client-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.client-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.client-table th,
+.client-table td {
+  padding: 13px 15px;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.client-table th {
+  color: var(--color-muted);
+  background: #f7f9f8;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.client-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.client-table .empty-row {
+  padding: 22px 15px;
+  color: var(--color-muted);
+  text-align: center;
+  white-space: normal;
+}
+
+.client-status {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: var(--color-success);
+  background: #eaf3ee;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.client-status.is-inactive {
+  color: #6c7472;
+  background: #edf0ef;
+}
+
 .client-footer {
   width: 100%;
   justify-content: center;
@@ -413,6 +490,14 @@ button {
 
   .client-form {
     grid-template-columns: 1fr;
+  }
+
+  .client-search {
+    grid-template-columns: 1fr;
+  }
+
+  .client-search .primary-button {
+    width: 100%;
   }
 }
 

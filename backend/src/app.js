@@ -21,14 +21,17 @@ app.use("/api", (req, res, next) => {
   res.status(404).json({ error: "Rota não encontrada." });
 });
 
-app.get(["/clientes/novo", "/cadastro-cliente.html"], (req, res, next) => {
+app.get(["/clientes", "/clientes.html", "/clientes/novo", "/cadastro-cliente.html"], (req, res, next) => {
   const authenticated = getSession(getSessionToken(req));
   if (!authenticated || authenticated.user.perfil !== "Recepcionista") {
     return res.redirect("/");
   }
 
   setSessionCookie(res, req, authenticated.token);
-  res.sendFile(path.join(publicDirectory, "cadastro-cliente.html"), (error) => {
+  const pagina = req.path === "/clientes/novo" || req.path === "/cadastro-cliente.html"
+    ? "cadastro-cliente.html"
+    : "clientes.html";
+  res.sendFile(path.join(publicDirectory, pagina), (error) => {
     if (error) next(error);
   });
 });
