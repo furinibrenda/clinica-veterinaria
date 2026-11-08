@@ -1,8 +1,12 @@
 const express = require("express");
+const path = require("node:path");
 const { publicDirectory } = require("./config");
 const authRoutes = require("./routes/authRoutes");
+const clienteRoutes = require("./routes/clienteRoutes");
 const { securityHeaders } = require("./middleware/securityHeaders");
 const { errorHandler } = require("./middleware/errorHandler");
+const { getSession } = require("./services/sessionService");
+const { getSessionToken, setSessionCookie } = require("./utils/sessionCookie");
 
 const app = express();
 app.disable("x-powered-by");
@@ -13,8 +17,20 @@ app.use(securityHeaders);
 app.use("/api", (req, res, next) => {
   res.set("Cache-Control", "no-store");
   next();
-}, authRoutes, (req, res) => {
+}, authRoutes, clienteRoutes, (req, res) => {
   res.status(404).json({ error: "Rota não encontrada." });
+});
+
+app.get(["/clientes/novo", "/cadastro-cliente.html"], (req, res, next) => {
+  const authenticated = getSession(getSessionToken(req));
+  if (!authenticated || authenticated.user.perfil !== "Recepcionista") {
+    return res.redirect("/");
+  }
+
+  setSessionCookie(res, req, authenticated.token);
+  res.sendFile(path.join(publicDirectory, "cadastro-cliente.html"), (error) => {
+    if (error) next(error);
+  });
 });
 
 app.use((req, res, next) => {

@@ -140,6 +140,7 @@ button {
   margin-bottom: 32px;
 }
 
+.form-heading h1,
 .form-heading h2,
 .signed-in-view h2 {
   margin: 0 0 9px;
@@ -262,6 +263,23 @@ button {
   background: var(--color-surface);
 }
 
+.register-client-link {
+  display: grid;
+  place-items: center;
+  margin-top: 22px;
+  color: #fff;
+  background: var(--color-primary);
+  text-decoration: none;
+}
+
+.register-client-link:hover {
+  background: var(--color-primary-dark);
+}
+
+.register-client-link[hidden] {
+  display: none;
+}
+
 .secondary-button:hover {
   background: #edf3f1;
 }
@@ -304,6 +322,72 @@ button {
   font-weight: 700;
 }
 
+.client-page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+.client-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px clamp(20px, 5vw, 64px);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-primary);
+  background: var(--color-surface);
+}
+
+.client-back-link {
+  color: var(--color-primary);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.client-back-link:hover {
+  text-decoration: underline;
+}
+
+.client-main {
+  width: min(100% - 40px, 820px);
+  margin: 48px auto;
+}
+
+.client-card {
+  padding: clamp(24px, 5vw, 42px);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-surface);
+  box-shadow: 0 8px 28px rgb(25 55 49 / 5%);
+}
+
+.client-card .form-heading {
+  margin-bottom: 24px;
+}
+
+.client-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.client-form .field-full,
+.client-form .primary-button {
+  grid-column: 1 / -1;
+}
+
+.client-form .primary-button {
+  margin-top: 0;
+}
+
+.client-footer {
+  width: 100%;
+  justify-content: center;
+  padding: 0 20px 20px;
+}
+
 @media (max-width: 700px) {
   .login-layout {
     grid-template-columns: 1fr;
@@ -321,6 +405,15 @@ button {
   .mobile-brand {
     display: inline-flex;
   }
+
+  .client-main {
+    margin-top: 28px;
+    margin-bottom: 28px;
+  }
+
+  .client-form {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 380px) {
@@ -331,6 +424,19 @@ button {
 
   .login-footer {
     flex-wrap: wrap;
+  }
+
+  .client-header {
+    flex-wrap: wrap;
+  }
+
+  .client-form {
+    grid-template-columns: 1fr;
+  }
+
+  .client-form .field,
+  .client-form .primary-button {
+    grid-column: 1;
   }
 }
 

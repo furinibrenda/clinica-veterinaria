@@ -10,14 +10,20 @@ const inserirCliente = db.prepare(`
   VALUES (@nome, @cpf, @telefone, @email, @endereco)
 `);
 
+function clienteError(message, status) {
+  const error = new Error(message);
+  error.status = status;
+  return error;
+}
+
 function cadastrarCliente(dados) {
   const nome = typeof dados?.nome === "string" ? dados.nome.trim() : "";
   const cpfInformado = typeof dados?.cpf === "string" ? dados.cpf.trim() : "";
   const telefone = typeof dados?.telefone === "string" ? dados.telefone.trim() : "";
 
-  if (!nome) throw new Error("Nome é obrigatório.");
-  if (!cpfInformado) throw new Error("CPF é obrigatório.");
-  if (!telefone) throw new Error("Telefone é obrigatório.");
+  if (!nome) throw clienteError("Nome é obrigatório.", 400);
+  if (!cpfInformado) throw clienteError("CPF é obrigatório.", 400);
+  if (!telefone) throw clienteError("Telefone é obrigatório.", 400);
 
   const cpf = cpfInformado.replace(/[.-]/g, "");
   const cliente = new Cliente({
@@ -28,8 +34,10 @@ function cadastrarCliente(dados) {
     endereco: typeof dados.endereco === "string" ? dados.endereco.trim() || null : null,
   });
 
-  if (!cliente.validarCPF()) throw new Error("CPF inválido.");
-  if (clientePorCpf.get(cpf)) throw new Error("Já existe um cliente cadastrado com este CPF.");
+  if (!cliente.validarCPF()) throw clienteError("CPF inválido.", 400);
+  if (clientePorCpf.get(cpf)) {
+    throw clienteError("Já existe um cliente cadastrado com este CPF.", 409);
+  }
 
   try {
     const resultado = inserirCliente.run({
@@ -43,7 +51,7 @@ function cadastrarCliente(dados) {
     return cliente;
   } catch (erro) {
     if (erro.code === "SQLITE_CONSTRAINT_UNIQUE") {
-      throw new Error("Já existe um cliente cadastrado com este CPF.");
+      throw clienteError("Já existe um cliente cadastrado com este CPF.", 409);
     }
     throw erro;
   }
