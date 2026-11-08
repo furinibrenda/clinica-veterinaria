@@ -3,7 +3,7 @@ const { db } = require("./database");
 
 const users = [
   { nome: "Recepcionista", login: "recepcionista", senha: "Recep123@", perfil: "Recepcionista" },
-  { nome: "Veterinário", login: "veterinario", senha: "Vet123@", perfil: "Veterinário" },
+  { nome: "Veterinário", login: "veterinario", senha: "Vet123@4", perfil: "Veterinário" },
 ];
 
 try {
