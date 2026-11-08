@@ -1,50 +1,35 @@
-const { randomBytes } = require("node:crypto");
 const bcrypt = require("bcryptjs");
 const { db } = require("./database");
 
 const users = [
-  { nome: "Recepcionista", login: "recepcionista", perfil: "Recepcionista" },
-  { nome: "Veterinário", login: "veterinario", perfil: "Veterinário" },
+  { nome: "Recepcionista", login: "recepcionista", senha: "Recep123@", perfil: "Recepcionista" },
+  { nome: "Veterinário", login: "veterinario", senha: "Vet123@", perfil: "Veterinário" },
 ];
 
 try {
-  const insertUser = db.prepare(`
+  const upsertUser = db.prepare(`
     INSERT INTO usuarios (nome, login, senha_hash, perfil)
     VALUES (@nome, @login, @senha_hash, @perfil)
+    ON CONFLICT(login) DO UPDATE SET
+      nome = excluded.nome,
+      login = excluded.login,
+      senha_hash = excluded.senha_hash,
+      perfil = excluded.perfil
   `);
-  const findUser = db.prepare("SELECT perfil FROM usuarios WHERE login = ?");
-  const created = [];
 
   const seedUsers = db.transaction(() => {
     for (const user of users) {
-      const existing = findUser.get(user.login);
-      if (existing) {
-        if (existing.perfil !== user.perfil) {
-          throw new Error(`O login "${user.login}" já está associado a outro perfil.`);
-        }
-        continue;
-      }
-
-      const password = randomBytes(18).toString("base64url");
-      insertUser.run({
-        ...user,
-        senha_hash: bcrypt.hashSync(password, 12),
+      upsertUser.run({
+        nome: user.nome,
+        login: user.login,
+        senha_hash: bcrypt.hashSync(user.senha, 12),
+        perfil: user.perfil,
       });
-      created.push({ login: user.login, password });
     }
   });
 
   seedUsers();
-
-  for (const user of created) {
-    console.log(`Login: ${user.login}\nSenha inicial: ${user.password}\n`);
-  }
-  for (const user of users.filter((item) => !created.some((createdUser) => createdUser.login === item.login))) {
-    console.log(`Login "${user.login}" já existe; senha mantida.`);
-  }
-  if (created.length === 0) {
-    console.log("Os usuários iniciais já existem. Nenhuma senha foi alterada.");
-  }
+  console.log("Usuários de teste criados ou atualizados com sucesso.");
 } finally {
   db.close();
 }
