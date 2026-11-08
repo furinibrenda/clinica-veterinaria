@@ -1,4 +1,4 @@
-const { authenticate } = require("../services/authService");
+const { authenticate, registerUser } = require("../services/authService");
 const sessions = require("../services/sessionService");
 const {
   getSessionToken,
@@ -12,6 +12,18 @@ function publicUser(user) {
     login: user.login,
     profile: user.perfil,
   };
+}
+
+async function register(req, res, next) {
+  try {
+    const user = await registerUser(req.body);
+    res.status(201).json({ user: publicUser(user) });
+  } catch (error) {
+    if (error.status === 400 || error.status === 409) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    next(error);
+  }
 }
 
 async function login(req, res) {
@@ -38,4 +50,4 @@ function logout(req, res) {
   res.json({ message: "Sessão encerrada." });
 }
 
-module.exports = { login, session, logout };
+module.exports = { register, login, session, logout };
