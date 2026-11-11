@@ -90,10 +90,23 @@ const atendimentoDaConsulta = db.prepare(`
   WHERE consultas.id = @id AND consultas.status = @realizada
 `);
 const adendosDoAtendimento = db.prepare(`
-  SELECT id, atendimento_id, autor_id, texto, criado_em
+  SELECT adendos.id, adendos.atendimento_id, adendos.autor_id,
+    usuarios.nome AS autor, adendos.texto, adendos.criado_em
   FROM adendos
-  WHERE atendimento_id = ?
-  ORDER BY criado_em, id
+  JOIN usuarios ON usuarios.id = adendos.autor_id
+  WHERE adendos.atendimento_id = ?
+  ORDER BY adendos.criado_em, adendos.id
+`);
+const inserirAdendo = db.prepare(`
+  INSERT INTO adendos (atendimento_id, autor_id, texto)
+  VALUES (@atendimento_id, @autor_id, @texto)
+`);
+const adendoPorId = db.prepare(`
+  SELECT adendos.id, adendos.atendimento_id, adendos.autor_id,
+    usuarios.nome AS autor, adendos.texto, adendos.criado_em
+  FROM adendos
+  JOIN usuarios ON usuarios.id = adendos.autor_id
+  WHERE adendos.id = ?
 `);
 const marcarConsultaRealizada = db.prepare(`
   UPDATE consultas
@@ -294,6 +307,37 @@ function buscarAtendimento(id) {
   return { atendimento, adendos };
 }
 
+function registrarAdendo(consultaId, dados, veterinarioId) {
+  if (typeof dados?.texto !== "string" || !dados.texto.trim()) {
+    throw consultaError("Informe o texto do adendo.", 400);
+  }
+
+  const registrar = db.transaction(() => {
+    const consulta = consultaPorId.get(consultaId);
+    if (!consulta) throw consultaError("Consulta não encontrada.", 404);
+    if (consulta.status !== StatusConsulta.REALIZADA) {
+      throw consultaError("Adendos só podem ser registrados em consultas realizadas.", 409);
+    }
+
+    const atendimento = atendimentoDaConsulta.get({
+      id: consultaId,
+      realizada: StatusConsulta.REALIZADA,
+    });
+    if (!atendimento) {
+      throw consultaError("A consulta não possui atendimento realizado.", 409);
+    }
+
+    const resultado = inserirAdendo.run({
+      atendimento_id: atendimento.id,
+      autor_id: veterinarioId,
+      texto: dados.texto.trim(),
+    });
+    return new Adendo(adendoPorId.get(Number(resultado.lastInsertRowid)));
+  });
+
+  return registrar();
+}
+
 function listarAnimaisAtivosDoTutor(tutorId) {
   return animaisAtivosDoTutor.all(tutorId);
 }
@@ -365,5 +409,6 @@ module.exports = {
   listarConsultas,
   listarVeterinarios,
   listarVeterinariosDaAgenda,
+  registrarAdendo,
   registrarAtendimento,
 };

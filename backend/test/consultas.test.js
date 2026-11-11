@@ -364,10 +364,11 @@ test("agendamento valida horário, conflito e acesso de Recepcionista", async ()
       .get(consultaAtendimentoId).total,
     1,
   );
-  assert.equal(
-    (await recepcionista.get(`/api/consultas/${consultaAtendimentoId}/atendimento`)).status,
-    200,
+  const atendimentoRecepcionista = await recepcionista.get(
+    `/api/consultas/${consultaAtendimentoId}/atendimento`,
   );
+  assert.equal(atendimentoRecepcionista.status, 200);
+  assert.equal(atendimentoRecepcionista.body.pode_adicionar_adendo, false);
   const adendoTexto = "Retorno recomendado em sete dias.";
   db.prepare(`
     INSERT INTO adendos (atendimento_id, autor_id, texto)
@@ -380,10 +381,36 @@ test("agendamento valida horário, conflito e acesso de Recepcionista", async ()
   assert.deepEqual(atendimentoVisualizado.body.atendimento, registro.body.atendimento);
   assert.equal(atendimentoVisualizado.body.adendos.length, 1);
   assert.equal(atendimentoVisualizado.body.adendos[0].texto, adendoTexto);
+  assert.equal(atendimentoVisualizado.body.pode_adicionar_adendo, true);
+  assert.equal(atendimentoVisualizado.body.adendos[0].autor, "Veterinário A");
+  assert.ok(atendimentoVisualizado.body.adendos[0].criado_em);
+
+  const adendoSemTexto = await veterinario.post(
+    `/api/consultas/${consultaAtendimentoId}/atendimento/adendos`,
+  ).send({ texto: "   " });
+  assert.equal(adendoSemTexto.status, 400);
+  assert.equal(adendoSemTexto.body.error, "Informe o texto do adendo.");
   assert.equal(
-    (await recepcionista.get(`/api/consultas/${consultaAtendimentoId}/atendimento`)).status,
-    200,
+    (await recepcionista.post(
+      `/api/consultas/${consultaAtendimentoId}/atendimento/adendos`,
+    ).send({ texto: "Adendo não autorizado." })).status,
+    403,
   );
+  const novoAdendo = await veterinario.post(
+    `/api/consultas/${consultaAtendimentoId}/atendimento/adendos`,
+  ).send({ texto: "Retorno em sete dias." });
+  assert.equal(novoAdendo.status, 201);
+  assert.equal(novoAdendo.body.adendo.autor_id, veterinarioId);
+  assert.equal(novoAdendo.body.adendo.autor, "Veterinário A");
+  assert.ok(novoAdendo.body.adendo.criado_em);
+
+  const atendimentoComNovoAdendo = await recepcionista.get(
+    `/api/consultas/${consultaAtendimentoId}/atendimento`,
+  );
+  assert.equal(atendimentoComNovoAdendo.body.atendimento.diagnostico, "Dermatite leve");
+  assert.equal(atendimentoComNovoAdendo.body.adendos.length, 2);
+  assert.equal(atendimentoComNovoAdendo.body.adendos[1].texto, "Retorno em sete dias.");
+  assert.equal(atendimentoComNovoAdendo.body.adendos[1].autor, "Veterinário A");
   const atendimentoDuplicado = await veterinario.post(
     `/api/consultas/${consultaAtendimentoId}/atendimento`,
   ).send({ diagnostico: "Outro diagnóstico" });

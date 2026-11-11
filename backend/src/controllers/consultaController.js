@@ -7,6 +7,7 @@ const {
   listarConsultas: buscarConsultas,
   listarVeterinarios: buscarVeterinarios,
   listarVeterinariosDaAgenda: buscarVeterinariosDaAgenda,
+  registrarAdendo: criarAdendo,
   registrarAtendimento: criarAtendimento,
 } = require("../services/consultaService");
 
@@ -97,9 +98,29 @@ function buscarAtendimento(req, res, next) {
   }
 
   try {
-    res.json(consultarAtendimento(id));
+    res.json({
+      ...consultarAtendimento(id),
+      pode_adicionar_adendo: req.user.perfil === "Veterinário",
+    });
   } catch (error) {
     if ([404, 409].includes(error.status)) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    next(error);
+  }
+}
+
+function registrarAdendo(req, res, next) {
+  const id = Number(req.params.id);
+  if (!Number.isSafeInteger(id) || id < 1) {
+    return res.status(400).json({ error: "Identificador de consulta inválido." });
+  }
+
+  try {
+    const adendo = criarAdendo(id, req.body, req.user.id);
+    res.status(201).json({ adendo, message: "Adendo registrado com sucesso." });
+  } catch (error) {
+    if ([400, 404, 409].includes(error.status)) {
       return res.status(error.status).json({ error: error.message });
     }
     next(error);
@@ -143,5 +164,6 @@ module.exports = {
   listarConsultas,
   listarVeterinarios,
   listarVeterinariosDaAgenda,
+  registrarAdendo,
   registrarAtendimento,
 };
