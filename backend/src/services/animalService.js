@@ -6,6 +6,15 @@ const inserirAnimal = db.prepare(`
   INSERT INTO animais (cliente_id, nome, especie, raca, data_nascimento)
   VALUES (@cliente_id, @nome, @especie, @raca, @data_nascimento)
 `);
+const buscarAnimais = db.prepare(`
+  SELECT animais.id, animais.nome, animais.especie, animais.raca,
+    animais.data_nascimento, animais.ativo, clientes.nome AS tutor
+  FROM animais
+  JOIN clientes ON clientes.id = animais.cliente_id
+  ORDER BY animais.nome COLLATE NOCASE, animais.id
+`);
+const inativarAnimalPorId = db.prepare("UPDATE animais SET ativo = 0 WHERE id = ?");
+const animalPorId = db.prepare("SELECT id FROM animais WHERE id = ?");
 
 function animalError(message, status) {
   const error = new Error(message);
@@ -68,4 +77,16 @@ function cadastrarAnimal(dados) {
   return animal;
 }
 
-module.exports = { cadastrarAnimal };
+function listarAnimais() {
+  return buscarAnimais.all();
+}
+
+function inativarAnimal(id) {
+  // TODO(RN-10): Impedir a inativação de animal com consulta "Agendada".
+  const resultado = inativarAnimalPorId.run(id);
+  if (resultado.changes === 0 && !animalPorId.get(id)) {
+    throw animalError("Animal não encontrado.", 404);
+  }
+}
+
+module.exports = { cadastrarAnimal, inativarAnimal, listarAnimais };

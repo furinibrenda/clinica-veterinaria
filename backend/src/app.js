@@ -27,6 +27,8 @@ app.get([
   "/clientes.html",
   "/clientes/novo",
   "/cadastro-cliente.html",
+  "/animais",
+  "/animais.html",
   "/animais/novo",
   "/cadastro-animal.html",
 ], (req, res, next) => {
@@ -39,6 +41,8 @@ app.get([
   let pagina = "clientes.html";
   if (req.path === "/clientes/novo" || req.path === "/cadastro-cliente.html") {
     pagina = "cadastro-cliente.html";
+  } else if (req.path === "/animais" || req.path === "/animais.html") {
+    pagina = "animais.html";
   } else if (req.path === "/animais/novo" || req.path === "/cadastro-animal.html") {
     pagina = "cadastro-animal.html";
   }

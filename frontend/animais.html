@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f7f6">
+    <meta name="description" content="Lista de animais da Clínica Veterinária Focinho & Cia.">
+    <title>Animais | SGCV</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/animais.js" defer></script>
+  </head>
+  <body class="client-page">
+    <header class="client-header">
+      <a class="brand" href="/" aria-label="SGCV, página inicial">
+        <span class="brand-mark" aria-hidden="true">S</span>
+        <span>SGCV</span>
+      </a>
+      <a class="client-back-link" href="/animais/novo">Cadastrar animal</a>
+    </header>
+
+    <main class="client-main">
+      <section class="client-card" aria-labelledby="animals-title">
+        <header class="form-heading">
+          <p class="eyebrow">ANIMAIS</p>
+          <h1 id="animals-title">Lista de animais</h1>
+          <p>Consulte os animais cadastrados e seus tutores.</p>
+        </header>
+
+        <div id="animal-list-message" class="form-message" role="status" aria-live="polite"></div>
+
+        <div class="client-table-wrap">
+          <table class="client-table">
+            <thead>
+              <tr>
+                <th scope="col">Nome</th>
+                <th scope="col">Espécie</th>
+                <th scope="col">Raça</th>
+                <th scope="col">Data de nascimento</th>
+                <th scope="col">Tutor</th>
+                <th scope="col">Situação</th>
+                <th scope="col">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="animal-list">
+              <tr><td class="empty-row" colspan="7">Carregando animais...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer class="login-footer client-footer">
+      <span>SGCV</span>
+      <span>Sistema de Gestão de Clínica Veterinária</span>
+    </footer>
+  </body>
+</html>

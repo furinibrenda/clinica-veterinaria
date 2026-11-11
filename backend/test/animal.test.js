@@ -91,7 +91,10 @@ test("cadastro de animal permite apenas Recepcionista", async () => {
   };
   const visitante = request.agent(app);
   assert.equal((await visitante.get("/animais/novo")).status, 302);
+  assert.equal((await visitante.get("/animais")).status, 302);
+  assert.equal((await visitante.get("/api/animais")).status, 401);
   assert.equal((await visitante.post("/api/animais").send(dadosAnimal)).status, 401);
+  assert.equal((await visitante.patch("/api/animais/1/inativar")).status, 401);
 
   const recepcionista = request.agent(app);
   assert.equal(
@@ -107,11 +110,48 @@ test("cadastro de animal permite apenas Recepcionista", async () => {
   assert.equal(cadastro.body.animal.raca, dadosAnimal.raca);
   assert.equal(cadastro.body.animal.data_nascimento, dadosAnimal.data_nascimento);
 
+  const paginaAnimais = await recepcionista.get("/animais");
+  assert.equal(paginaAnimais.status, 200);
+  assert.match(paginaAnimais.text, /Lista de animais/);
+  const lista = await recepcionista.get("/api/animais");
+  assert.equal(lista.status, 200);
+  assert.equal(
+    lista.body.animais.some((animal) => animal.id === cadastro.body.animal.id
+      && animal.tutor === "Ana Silva"),
+    true,
+  );
+  const dadosAntesInativar = db.prepare(`
+    SELECT cliente_id, nome, especie, raca, data_nascimento
+    FROM animais WHERE id = ?
+  `).get(cadastro.body.animal.id);
+  assert.equal(
+    (await recepcionista.patch(`/api/animais/${cadastro.body.animal.id}/inativar`)).status,
+    200,
+  );
+  assert.deepEqual(
+    db.prepare(`
+      SELECT cliente_id, nome, especie, raca, data_nascimento, ativo
+      FROM animais WHERE id = ?
+    `).get(cadastro.body.animal.id),
+    { ...dadosAntesInativar, ativo: 0 },
+  );
+  const listaAtualizada = await recepcionista.get("/api/animais");
+  const animalInativo = listaAtualizada.body.animais.find(
+    (animal) => animal.id === cadastro.body.animal.id,
+  );
+  assert.equal(animalInativo.ativo, 0);
+  assert.equal(animalInativo.tutor, "Ana Silva");
+  assert.equal((await recepcionista.patch("/api/animais/99999/inativar")).status, 404);
+  assert.equal((await recepcionista.patch("/api/animais/0/inativar")).status, 400);
+
   const veterinario = request.agent(app);
   assert.equal(
     (await veterinario.post("/api/login").send({ login: "vet", password: "senha-teste" })).status,
     200,
   );
   assert.equal((await veterinario.get("/animais/novo")).status, 302);
+  assert.equal((await veterinario.get("/animais")).status, 302);
+  assert.equal((await veterinario.get("/api/animais")).status, 403);
   assert.equal((await veterinario.post("/api/animais").send(dadosAnimal)).status, 403);
+  assert.equal((await veterinario.patch(`/api/animais/${cadastro.body.animal.id}/inativar`)).status, 403);
 });
