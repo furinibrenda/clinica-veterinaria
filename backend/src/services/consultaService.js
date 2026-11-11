@@ -37,7 +37,7 @@ const inserirConsulta = db.prepare(`
   VALUES (@animal_id, @veterinario_id, @agendado_por, @data, @hora, @status)
 `);
 const consultasDaAgenda = db.prepare(`
-  SELECT consultas.data, consultas.hora, consultas.status,
+  SELECT consultas.id, consultas.data, consultas.hora, consultas.status,
     clientes.nome AS tutor, animais.nome AS animal, usuarios.nome AS veterinario
   FROM consultas
   JOIN animais ON animais.id = consultas.animal_id
@@ -47,6 +47,12 @@ const consultasDaAgenda = db.prepare(`
     AND (@veterinario_id IS NULL OR consultas.veterinario_id = @veterinario_id)
   ORDER BY consultas.data, consultas.hora, usuarios.nome COLLATE NOCASE
 `);
+const cancelarConsultaPorId = db.prepare(`
+  UPDATE consultas
+  SET status = @cancelada
+  WHERE id = @id AND status = @agendada
+`);
+const statusConsultaPorId = db.prepare("SELECT status FROM consultas WHERE id = ?");
 
 function consultaError(message, status) {
   const error = new Error(message);
@@ -118,6 +124,19 @@ function listarConsultas(filtros) {
   return consultasDaAgenda.all({ data, veterinario_id: veterinarioId });
 }
 
+function cancelarConsulta(id) {
+  const resultado = cancelarConsultaPorId.run({
+    id,
+    agendada: StatusConsulta.AGENDADA,
+    cancelada: StatusConsulta.CANCELADA,
+  });
+  if (resultado.changes === 1) return;
+
+  const consulta = statusConsultaPorId.get(id);
+  if (!consulta) throw consultaError("Consulta não encontrada.", 404);
+  throw consultaError("Somente consultas agendadas podem ser canceladas.", 409);
+}
+
 function listarAnimaisAtivosDoTutor(tutorId) {
   return animaisAtivosDoTutor.all(tutorId);
 }
@@ -182,6 +201,7 @@ function agendarConsulta(dados, recepcionistaId) {
 
 module.exports = {
   agendarConsulta,
+  cancelarConsulta,
   listarAnimaisAtivosDoTutor,
   listarConsultas,
   listarVeterinarios,
