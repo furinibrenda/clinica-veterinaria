@@ -1,5 +1,6 @@
 const {
   agendarConsulta: criarConsulta,
+  alterarConsulta: atualizarConsulta,
   cancelarConsulta: marcarConsultaCancelada,
   listarAnimaisAtivosDoTutor: buscarAnimaisAtivosDoTutor,
   listarConsultas: buscarConsultas,
@@ -24,6 +25,7 @@ function listarConsultas(req, res, next) {
         veterinario_id: veterinarioId === null ? null : Number(veterinarioId),
       }),
       pode_cancelar: req.user.perfil === "Recepcionista",
+      pode_alterar: req.user.perfil === "Recepcionista",
     });
   } catch (error) {
     if (error.status === 400) {
@@ -44,6 +46,23 @@ function cancelarConsulta(req, res, next) {
     res.json({ message: "Consulta cancelada com sucesso." });
   } catch (error) {
     if ([404, 409].includes(error.status)) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    next(error);
+  }
+}
+
+function alterarConsulta(req, res, next) {
+  const id = Number(req.params.id);
+  if (!Number.isSafeInteger(id) || id < 1) {
+    return res.status(400).json({ error: "Identificador de consulta inválido." });
+  }
+
+  try {
+    const consulta = atualizarConsulta(id, req.body);
+    res.json({ consulta, message: "Consulta alterada com sucesso." });
+  } catch (error) {
+    if ([400, 404, 409].includes(error.status)) {
       return res.status(error.status).json({ error: error.message });
     }
     next(error);
@@ -80,6 +99,7 @@ function agendarConsulta(req, res, next) {
 
 module.exports = {
   agendarConsulta,
+  alterarConsulta,
   cancelarConsulta,
   listarAnimaisDoTutor,
   listarConsultas,

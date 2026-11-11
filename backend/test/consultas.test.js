@@ -165,6 +165,7 @@ test("agendamento valida horário, conflito e acesso de Recepcionista", async ()
   assert.equal(consultasData.body.consultas[0].veterinario, "Veterinário A");
   assert.equal(consultasData.body.consultas[0].status, StatusConsulta.AGENDADA);
   assert.equal(consultasData.body.pode_cancelar, true);
+  assert.equal(consultasData.body.pode_alterar, true);
   assert.equal(
     (await recepcionista.get("/api/consultas").query({ data: "2035-02-30" })).status,
     400,
@@ -179,6 +180,31 @@ test("agendamento valida horário, conflito e acesso de Recepcionista", async ()
   assert.match(conflito.body.error, /já possui uma consulta agendada nesse horário/);
 
   const consultaId = cadastro.body.consulta.id;
+  const consultaAlterada = await recepcionista.patch(`/api/consultas/${consultaId}`).send({
+    data: "2035-05-11",
+    hora: "09:00",
+    veterinario_id: outroVeterinarioId,
+  });
+  assert.equal(consultaAlterada.status, 200);
+  assert.equal(consultaAlterada.body.consulta.data, "2035-05-11");
+  assert.equal(consultaAlterada.body.consulta.hora, "09:00");
+  assert.equal(consultaAlterada.body.consulta.veterinario_id, outroVeterinarioId);
+  assert.equal(
+    (await recepcionista.patch(`/api/consultas/${consultaId}`).send(dados)).status,
+    200,
+  );
+  assert.equal((await recepcionista.patch("/api/consultas/0").send(dados)).status, 400);
+  assert.equal((await recepcionista.patch("/api/consultas/99999").send(dados)).status, 404);
+  for (const tentativa of [
+    { ...dados, data: "2000-01-01" },
+    { ...dados, data: "2035-02-30" },
+    { ...dados, hora: "17:45" },
+  ]) {
+    assert.equal(
+      (await recepcionista.patch(`/api/consultas/${consultaId}`).send(tentativa)).status,
+      400,
+    );
+  }
   assert.equal(
     (await recepcionista.patch(`/api/consultas/${consultaId}/cancelar`)).status,
     200,
@@ -198,6 +224,10 @@ test("agendamento valida horário, conflito e acesso de Recepcionista", async ()
   assert.equal(db.prepare("SELECT COUNT(*) AS total FROM consultas WHERE id = ?").get(consultaId).total, 1);
   assert.equal(
     (await recepcionista.patch(`/api/consultas/${consultaId}/cancelar`)).status,
+    409,
+  );
+  assert.equal(
+    (await recepcionista.patch(`/api/consultas/${consultaId}`).send(dados)).status,
     409,
   );
   assert.equal((await recepcionista.patch("/api/consultas/99999/cancelar")).status, 404);
@@ -224,6 +254,14 @@ test("agendamento valida horário, conflito e acesso de Recepcionista", async ()
     })).status,
     201,
   );
+  assert.equal(
+    (await recepcionista.patch(`/api/consultas/${reagendamento.body.consulta.id}`).send({
+      ...dados,
+      veterinario_id: outroVeterinarioId,
+      hora: "08:30",
+    })).status,
+    409,
+  );
   const consultasVeterinario = await recepcionista.get("/api/consultas").query({
     veterinario_id: outroVeterinarioId,
   });
@@ -243,8 +281,13 @@ test("agendamento valida horário, conflito e acesso de Recepcionista", async ()
   const agendaVeterinarioApi = await veterinario.get("/api/consultas");
   assert.equal(agendaVeterinarioApi.status, 200);
   assert.equal(agendaVeterinarioApi.body.pode_cancelar, false);
+  assert.equal(agendaVeterinarioApi.body.pode_alterar, false);
   assert.equal(
     (await veterinario.patch(`/api/consultas/${reagendamento.body.consulta.id}/cancelar`)).status,
+    403,
+  );
+  assert.equal(
+    (await veterinario.patch(`/api/consultas/${reagendamento.body.consulta.id}`).send(dados)).status,
     403,
   );
   assert.equal((await veterinario.get(`/api/clientes/${tutorId}/animais`)).status, 403);

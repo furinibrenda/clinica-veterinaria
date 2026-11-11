@@ -37,7 +37,7 @@ const inserirConsulta = db.prepare(`
   VALUES (@animal_id, @veterinario_id, @agendado_por, @data, @hora, @status)
 `);
 const consultasDaAgenda = db.prepare(`
-  SELECT consultas.id, consultas.data, consultas.hora, consultas.status,
+  SELECT consultas.id, consultas.veterinario_id, consultas.data, consultas.hora, consultas.status,
     clientes.nome AS tutor, animais.nome AS animal, usuarios.nome AS veterinario
   FROM consultas
   JOIN animais ON animais.id = consultas.animal_id
@@ -51,6 +51,16 @@ const cancelarConsultaPorId = db.prepare(`
   UPDATE consultas
   SET status = @cancelada
   WHERE id = @id AND status = @agendada
+`);
+const consultaPorId = db.prepare(`
+  SELECT id, animal_id, agendado_por, status
+  FROM consultas
+  WHERE id = ?
+`);
+const alterarConsultaPorId = db.prepare(`
+  UPDATE consultas
+  SET veterinario_id = @veterinario_id, data = @data, hora = @hora
+  WHERE id = @id AND status = @status
 `);
 const statusConsultaPorId = db.prepare("SELECT status FROM consultas WHERE id = ?");
 
@@ -137,6 +147,52 @@ function cancelarConsulta(id) {
   throw consultaError("Somente consultas agendadas podem ser canceladas.", 409);
 }
 
+function alterarConsulta(id, dados) {
+  const alterar = db.transaction(() => {
+    const consulta = consultaPorId.get(id);
+    if (!consulta) throw consultaError("Consulta não encontrada.", 404);
+    if (consulta.status !== StatusConsulta.AGENDADA) {
+      throw consultaError("Somente consultas agendadas podem ser alteradas.", 409);
+    }
+
+    const veterinarioId = Number(dados?.veterinario_id);
+    if (!Number.isSafeInteger(veterinarioId) || veterinarioId < 1) {
+      throw consultaError("Selecione um veterinário.", 400);
+    }
+    validarDataHora(dados?.data, dados?.hora);
+
+    const dadosVeterinario = veterinarioPorId.get(veterinarioId);
+    if (!dadosVeterinario) {
+      throw consultaError("Veterinário não encontrado ou inativo.", 404);
+    }
+
+    const veterinario = new Veterinario(dadosVeterinario);
+    if (!veterinario.estaDisponivel(dados.data, dados.hora, id)) {
+      throw consultaError("O veterinário já possui uma consulta agendada nesse horário.", 409);
+    }
+
+    alterarConsultaPorId.run({
+      id,
+      veterinario_id: veterinarioId,
+      data: dados.data,
+      hora: dados.hora,
+      status: StatusConsulta.AGENDADA,
+    });
+
+    return new Consulta({
+      id,
+      animal_id: consulta.animal_id,
+      veterinario_id: veterinarioId,
+      agendado_por: consulta.agendado_por,
+      data: dados.data,
+      hora: dados.hora,
+      status: StatusConsulta.AGENDADA,
+    });
+  });
+
+  return alterar();
+}
+
 function listarAnimaisAtivosDoTutor(tutorId) {
   return animaisAtivosDoTutor.all(tutorId);
 }
@@ -201,6 +257,7 @@ function agendarConsulta(dados, recepcionistaId) {
 
 module.exports = {
   agendarConsulta,
+  alterarConsulta,
   cancelarConsulta,
   listarAnimaisAtivosDoTutor,
   listarConsultas,

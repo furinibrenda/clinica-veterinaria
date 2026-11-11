@@ -8,6 +8,7 @@ const consultaAgendadaNoHorario = db.prepare(`
     AND data = @data
     AND hora = @hora
     AND status = @status
+    AND (@consulta_id IS NULL OR id != @consulta_id)
   LIMIT 1
 `);
 
@@ -17,12 +18,13 @@ class Veterinario {
     this.nome = nome;
   }
 
-  estaDisponivel(data, hora) {
+  estaDisponivel(data, hora, consultaId = null) {
     return !consultaAgendadaNoHorario.get({
       veterinario_id: this.id,
       data,
       hora,
       status: StatusConsulta.AGENDADA,
+      consulta_id: consultaId,
     });
   }
 }

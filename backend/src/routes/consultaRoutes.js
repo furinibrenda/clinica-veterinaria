@@ -1,6 +1,7 @@
 const express = require("express");
 const {
   agendarConsulta,
+  alterarConsulta,
   cancelarConsulta,
   listarAnimaisDoTutor,
   listarConsultas,
@@ -16,6 +17,13 @@ router.get(
   requireAuth,
   requireProfile("Recepcionista", "Veterinário"),
   listarConsultas,
+);
+router.patch(
+  "/consultas/:id",
+  requireAuth,
+  requireProfile("Recepcionista"),
+  jsonObjectBody,
+  alterarConsulta,
 );
 router.patch(
   "/consultas/:id/cancelar",
