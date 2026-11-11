@@ -51,8 +51,8 @@ db.exec(`
     agendado_por INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE RESTRICT,
     data TEXT NOT NULL,
     hora TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'Agendada'
-      CHECK (status IN ('Agendada', 'Realizada', 'Cancelada')),
+    status TEXT NOT NULL DEFAULT 'AGENDADA'
+      CHECK (status IN ('AGENDADA', 'REALIZADA', 'CANCELADA')),
     criado_em TEXT NOT NULL DEFAULT (datetime('now'))
   );
 
@@ -79,5 +79,52 @@ db.exec(`
     criado_em TEXT NOT NULL DEFAULT (datetime('now'))
   );
 `);
+
+const tabelaConsultas = db.prepare(`
+  SELECT sql FROM sqlite_master
+  WHERE type = 'table' AND name = 'consultas'
+`).get();
+
+if (tabelaConsultas.sql.includes("'Agendada'")) {
+  const migrarConsultas = db.transaction(() => {
+    db.exec(`
+      CREATE TABLE consultas_nova (
+        id INTEGER PRIMARY KEY,
+        animal_id INTEGER NOT NULL REFERENCES animais(id) ON DELETE RESTRICT,
+        veterinario_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE RESTRICT,
+        agendado_por INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE RESTRICT,
+        data TEXT NOT NULL,
+        hora TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'AGENDADA'
+          CHECK (status IN ('AGENDADA', 'REALIZADA', 'CANCELADA')),
+        criado_em TEXT NOT NULL DEFAULT (datetime('now'))
+      );
+
+      INSERT INTO consultas_nova (
+        id, animal_id, veterinario_id, agendado_por, data, hora, status, criado_em
+      )
+      SELECT id, animal_id, veterinario_id, agendado_por, data, hora,
+        CASE status
+          WHEN 'Agendada' THEN 'AGENDADA'
+          WHEN 'Realizada' THEN 'REALIZADA'
+          WHEN 'Cancelada' THEN 'CANCELADA'
+        END,
+        criado_em
+      FROM consultas;
+
+      DROP TABLE consultas;
+      ALTER TABLE consultas_nova RENAME TO consultas;
+      CREATE INDEX idx_consultas_agenda
+        ON consultas(veterinario_id, data, hora, status);
+    `);
+  });
+
+  db.pragma("foreign_keys = OFF");
+  try {
+    migrarConsultas();
+  } finally {
+    db.pragma("foreign_keys = ON");
+  }
+}
 
 module.exports = { db, databasePath };
