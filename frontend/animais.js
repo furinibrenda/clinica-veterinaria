@@ -9,7 +9,7 @@ function renderAnimais(animais) {
     const cell = document.createElement("td");
     cell.className = "empty-row";
     cell.colSpan = 7;
-    cell.textContent = "Nenhum animal cadastrado.";
+    cell.textContent = "Nenhum animal encontrado.";
     row.append(cell);
     animalList.append(row);
     return;

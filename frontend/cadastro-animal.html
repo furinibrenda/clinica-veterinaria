@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f7f6">
+    <meta name="description" content="Cadastro de animal da Clínica Veterinária Focinho & Cia.">
+    <title>Cadastro de animal | SGCV</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/cadastro-animal.js" defer></script>
+  </head>
+  <body class="client-page">
+    <header class="client-header">
+      <a class="brand" href="/" aria-label="SGCV, página inicial">
+        <span class="brand-mark" aria-hidden="true">S</span>
+        <span>SGCV</span>
+      </a>
+      <a class="client-back-link" href="/">Voltar ao sistema</a>
+    </header>
+
+    <main class="client-main">
+      <section class="client-card" aria-labelledby="animal-form-title">
+        <header class="form-heading">
+          <p class="eyebrow">ANIMAIS</p>
+          <h1 id="animal-form-title">Cadastrar animal</h1>
+          <p>Localize o tutor e preencha os dados do animal.</p>
+        </header>
+
+        <div id="animal-form-message" class="form-message" role="status" aria-live="polite"></div>
+
+        <form id="tutor-search-form" class="client-search">
+          <div class="field">
+            <label for="tutor-search">Buscar tutor por nome ou CPF</label>
+            <input id="tutor-search" name="busca" type="search" maxlength="100"
+              placeholder="Digite o nome ou CPF">
+          </div>
+          <button class="primary-button" type="submit">Buscar tutor</button>
+        </form>
+
+        <form id="animal-form" class="client-form">
+          <div class="field field-full">
+            <label for="animal-tutor">Tutor encontrado</label>
+            <select id="animal-tutor" name="cliente_id" required>
+              <option value="">Busque e selecione um tutor</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="animal-name">Nome</label>
+            <input id="animal-name" name="nome" type="text" maxlength="120"
+              placeholder="Nome do animal" required>
+          </div>
+          <div class="field">
+            <label for="animal-species">Espécie</label>
+            <input id="animal-species" name="especie" type="text" maxlength="80"
+              placeholder="Ex.: cão ou gato" required>
+          </div>
+          <div class="field">
+            <label for="animal-breed">Raça <span>(opcional)</span></label>
+            <input id="animal-breed" name="raca" type="text" maxlength="100"
+              placeholder="Raça do animal">
+          </div>
+          <div class="field">
+            <label for="animal-birth-date">Data de nascimento <span>(opcional)</span></label>
+            <input id="animal-birth-date" name="data_nascimento" type="date">
+          </div>
+          <button class="primary-button" type="submit">Cadastrar animal</button>
+        </form>
+      </section>
+    </main>
+
+    <footer class="login-footer client-footer">
+      <span>SGCV</span>
+      <span>Sistema de Gestão de Clínica Veterinária</span>
+    </footer>
+  </body>
+</html>

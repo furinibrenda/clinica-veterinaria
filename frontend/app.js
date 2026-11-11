@@ -4,6 +4,10 @@ const authView = document.querySelector("#auth-view");
 const signedInView = document.querySelector("#signed-in-view");
 const listClientsLink = document.querySelector("#list-clients-link");
 const registerClientLink = document.querySelector("#register-client-link");
+const registerAnimalLink = document.querySelector("#register-animal-link");
+const listAnimalsLink = document.querySelector("#list-animals-link");
+const scheduleAppointmentLink = document.querySelector("#schedule-appointment-link");
+const viewAgendaLink = document.querySelector("#view-agenda-link");
 
 function showMessage(text, isSuccess = false) {
   message.textContent = text;
@@ -15,6 +19,10 @@ function showUser(user) {
   document.querySelector("#signed-in-profile").textContent = user.profile;
   listClientsLink.hidden = user.profile !== "Recepcionista";
   registerClientLink.hidden = user.profile !== "Recepcionista";
+  registerAnimalLink.hidden = user.profile !== "Recepcionista";
+  listAnimalsLink.hidden = user.profile !== "Recepcionista";
+  scheduleAppointmentLink.hidden = user.profile !== "Recepcionista";
+  viewAgendaLink.hidden = false;
   authView.hidden = true;
   signedInView.hidden = false;
 }
@@ -60,6 +68,10 @@ document.querySelector("#logout-button").addEventListener("click", async () => {
     signedInView.hidden = true;
     listClientsLink.hidden = true;
     registerClientLink.hidden = true;
+    registerAnimalLink.hidden = true;
+    listAnimalsLink.hidden = true;
+    scheduleAppointmentLink.hidden = true;
+    viewAgendaLink.hidden = true;
     authView.hidden = false;
     loginForm.reset();
     showMessage("");

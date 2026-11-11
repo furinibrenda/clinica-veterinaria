@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f7f6">
+    <meta name="description" content="Agendamento de consulta da Clínica Veterinária Focinho & Cia.">
+    <title>Agendar consulta | SGCV</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/agendar-consulta.js" defer></script>
+  </head>
+  <body class="client-page">
+    <header class="client-header">
+      <a class="brand" href="/" aria-label="SGCV, página inicial">
+        <span class="brand-mark" aria-hidden="true">S</span>
+        <span>SGCV</span>
+      </a>
+      <a class="client-back-link" href="/">Voltar ao sistema</a>
+    </header>
+
+    <main class="client-main">
+      <section class="client-card" aria-labelledby="appointment-title">
+        <header class="form-heading">
+          <p class="eyebrow">CONSULTAS</p>
+          <h1 id="appointment-title">Agendar consulta</h1>
+          <p>Selecione o tutor, o animal, o veterinário, a data e o horário da consulta.</p>
+        </header>
+
+        <div id="appointment-message" class="form-message" role="status" aria-live="polite"></div>
+
+        <form id="tutor-search-form" class="client-search">
+          <div class="field">
+            <label for="tutor-search">Buscar tutor por nome ou CPF</label>
+            <input id="tutor-search" name="busca" type="search" maxlength="100"
+              placeholder="Digite o nome ou CPF">
+          </div>
+          <button class="primary-button" type="submit">Buscar tutor</button>
+        </form>
+
+        <form id="appointment-form" class="client-form">
+          <div class="field field-full">
+            <label for="appointment-tutor">Tutor</label>
+            <select id="appointment-tutor" name="cliente_id" required>
+              <option value="">Busque e selecione um tutor</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="appointment-animal">Animal</label>
+            <select id="appointment-animal" name="animal_id" required disabled>
+              <option value="">Selecione primeiro um tutor</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="appointment-veterinarian">Veterinário</label>
+            <select id="appointment-veterinarian" name="veterinario_id" required>
+              <option value="">Carregando veterinários...</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="appointment-date">Data</label>
+            <input id="appointment-date" name="data" type="date" required>
+          </div>
+          <div class="field">
+            <label for="appointment-time">Horário</label>
+            <select id="appointment-time" name="hora" required>
+              <option value="">Selecione um horário</option>
+            </select>
+          </div>
+          <button id="appointment-submit" class="primary-button" type="submit" disabled>
+            Agendar consulta
+          </button>
+        </form>
+      </section>
+    </main>
+
+    <footer class="login-footer client-footer">
+      <span>SGCV</span>
+      <span>Sistema de Gestão de Clínica Veterinária</span>
+    </footer>
+  </body>
+</html>

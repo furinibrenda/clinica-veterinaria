@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f7f6">
+    <meta name="description" content="Agenda de consultas da Clínica Veterinária Focinho & Cia.">
+    <title>Agenda de consultas | SGCV</title>
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/agenda.js" defer></script>
+  </head>
+  <body class="client-page">
+    <header class="client-header">
+      <a class="brand" href="/" aria-label="SGCV, página inicial">
+        <span class="brand-mark" aria-hidden="true">S</span>
+        <span>SGCV</span>
+      </a>
+      <a class="client-back-link" href="/">Voltar ao sistema</a>
+    </header>
+
+    <main class="client-main">
+      <section class="client-card" aria-labelledby="agenda-title">
+        <header class="form-heading">
+          <p class="eyebrow">CONSULTAS</p>
+          <h1 id="agenda-title">Agenda de consultas</h1>
+          <p>Consulte as consultas por data e veterinário.</p>
+        </header>
+
+        <form id="agenda-filters" class="client-search">
+          <div class="field">
+            <label for="agenda-date">Data</label>
+            <input id="agenda-date" name="data" type="date">
+          </div>
+          <div class="field">
+            <label for="agenda-veterinarian">Veterinário</label>
+            <select id="agenda-veterinarian" name="veterinario_id">
+              <option value="">Todos os veterinários</option>
+            </select>
+          </div>
+          <button class="primary-button" type="submit">Filtrar</button>
+        </form>
+
+        <div id="agenda-message" class="form-message" role="status" aria-live="polite"></div>
+
+        <div class="client-table-wrap">
+          <table class="client-table">
+            <thead>
+              <tr>
+                <th scope="col">Data</th>
+                <th scope="col">Horário</th>
+                <th scope="col">Tutor</th>
+                <th scope="col">Animal</th>
+                <th scope="col">Veterinário</th>
+                <th scope="col">Status</th>
+                <th scope="col">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="agenda-list">
+              <tr><td class="empty-row" colspan="7">Carregando agenda...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <dialog id="edit-consultation-dialog" class="client-card appointment-dialog"
+      aria-labelledby="edit-consultation-title">
+      <header class="form-heading">
+        <p class="eyebrow">CONSULTAS</p>
+        <h2 id="edit-consultation-title">Alterar consulta</h2>
+        <p>Atualize a data, o horário e o veterinário.</p>
+      </header>
+      <div id="edit-consultation-message" class="form-message" role="status" aria-live="polite"></div>
+      <form id="edit-consultation-form" class="client-form">
+        <div class="field">
+          <label for="edit-consultation-date">Data</label>
+          <input id="edit-consultation-date" name="data" type="date" required>
+        </div>
+        <div class="field">
+          <label for="edit-consultation-time">Horário</label>
+          <select id="edit-consultation-time" name="hora" required>
+            <option value="">Selecione um horário</option>
+          </select>
+        </div>
+        <div class="field field-full">
+          <label for="edit-consultation-veterinarian">Veterinário</label>
+          <select id="edit-consultation-veterinarian" name="veterinario_id" required></select>
+        </div>
+        <div class="dialog-actions">
+          <button id="close-edit-consultation" class="secondary-button" type="button">Voltar</button>
+          <button id="save-edit-consultation" class="primary-button" type="submit">
+            Salvar alteração
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="register-visit-dialog" class="client-card appointment-dialog"
+      aria-labelledby="register-visit-title">
+      <header class="form-heading">
+        <p class="eyebrow">ATENDIMENTO</p>
+        <h2 id="register-visit-title">Registrar atendimento</h2>
+        <p>Informe os dados clínicos da consulta.</p>
+      </header>
+      <div id="register-visit-message" class="form-message" role="status" aria-live="polite"></div>
+      <form id="register-visit-form" class="client-form">
+        <div class="field field-full">
+          <label for="visit-symptoms">Sintomas</label>
+          <textarea id="visit-symptoms" name="sintomas" rows="3"></textarea>
+        </div>
+        <div class="field field-full">
+          <label for="visit-observations">Observações</label>
+          <textarea id="visit-observations" name="observacoes" rows="3"></textarea>
+        </div>
+        <div class="field field-full">
+          <label for="visit-prescription">Prescrição</label>
+          <textarea id="visit-prescription" name="prescricao" rows="3"></textarea>
+        </div>
+        <div class="field field-full">
+          <label for="visit-diagnosis">Diagnóstico</label>
+          <textarea id="visit-diagnosis" name="diagnostico" rows="3" required></textarea>
+        </div>
+        <div class="dialog-actions">
+          <button id="close-register-visit" class="secondary-button" type="button">Voltar</button>
+          <button id="save-register-visit" class="primary-button" type="submit">
+            Salvar atendimento
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="view-visit-dialog" class="client-card appointment-dialog"
+      aria-labelledby="view-visit-title">
+      <header class="form-heading">
+        <p class="eyebrow">ATENDIMENTO</p>
+        <h2 id="view-visit-title">Atendimento realizado</h2>
+        <p>Dados registrados para esta consulta.</p>
+      </header>
+      <div id="view-visit-message" class="form-message" role="status" aria-live="polite"></div>
+      <div id="view-visit-details" class="visit-details"></div>
+      <form id="addendum-form" class="client-form" hidden>
+        <div class="field field-full">
+          <label for="addendum-text">Novo adendo</label>
+          <textarea id="addendum-text" name="texto" rows="3" required></textarea>
+        </div>
+        <div id="addendum-message" class="form-message field-full" role="status" aria-live="polite"></div>
+        <div class="dialog-actions">
+          <button id="save-addendum" class="primary-button" type="submit">Registrar adendo</button>
+        </div>
+      </form>
+      <div class="dialog-actions">
+        <button id="close-view-visit" class="secondary-button" type="button">Fechar</button>
+      </div>
+    </dialog>
+
+    <footer class="login-footer client-footer">
+      <span>SGCV</span>
+      <span>Sistema de Gestão de Clínica Veterinária</span>
+    </footer>
+  </body>
+</html>

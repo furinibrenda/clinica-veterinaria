@@ -29,12 +29,20 @@ body {
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
 }
 
 button {
   cursor: pointer;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid rgb(23 100 95 / 32%);
+  outline-offset: 2px;
 }
 
 .login-layout {
@@ -205,8 +213,15 @@ button {
   font-weight: 600;
 }
 
+.field label span {
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+
 .field input,
-.field select {
+.field select,
+.field textarea {
   width: 100%;
   min-height: 46px;
   padding: 10px 12px;
@@ -226,8 +241,15 @@ button {
   color: #899491;
 }
 
+.field textarea {
+  resize: vertical;
+  font: inherit;
+  font-size: 14px;
+}
+
 .field input:focus,
-.field select:focus {
+.field select:focus,
+.field textarea:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 2px rgb(23 100 95 / 12%);
 }
@@ -254,6 +276,13 @@ button {
 .primary-button:disabled {
   cursor: wait;
   opacity: 0.7;
+}
+
+.secondary-button:disabled,
+.client-edit-button:disabled,
+.client-inactivate-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 
 .secondary-button {
@@ -355,6 +384,14 @@ button {
   margin: 48px auto;
 }
 
+.client-main:has(.client-form) {
+  width: min(100% - 40px, 760px);
+}
+
+.client-main:has(.client-table) {
+  width: min(100% - 40px, 1180px);
+}
+
 .client-card {
   padding: clamp(24px, 5vw, 42px);
   border: 1px solid var(--color-border);
@@ -414,7 +451,7 @@ button {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .client-table th,
@@ -440,6 +477,7 @@ button {
 .client-table .empty-row {
   padding: 22px 15px;
   color: var(--color-muted);
+  font-size: 13px;
   text-align: center;
   white-space: normal;
 }
@@ -459,9 +497,143 @@ button {
   background: #edf0ef;
 }
 
+.appointment-status {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.appointment-status.is-scheduled {
+  color: #805c16;
+  background: #f5efdf;
+}
+
+.appointment-status.is-completed {
+  color: var(--color-success);
+  background: #eaf3ee;
+}
+
+.appointment-status.is-cancelled {
+  color: #8d342e;
+  background: #f7eae8;
+}
+
+.client-inactivate-button {
+  min-height: 32px;
+  padding: 5px 10px;
+  border: 1px solid #a53d35;
+  border-radius: 5px;
+  color: #8d342e;
+  background: var(--color-surface);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.client-inactivate-button:hover:not(:disabled) {
+  color: #fff;
+  background: #a53d35;
+}
+
+.client-inactivate-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.client-edit-button {
+  min-height: 32px;
+  margin-right: 8px;
+  padding: 5px 10px;
+  border: 1px solid var(--color-primary);
+  border-radius: 5px;
+  color: var(--color-primary);
+  background: var(--color-surface);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.client-edit-button:hover:not(:disabled) {
+  color: #fff;
+  background: var(--color-primary);
+}
+
+.appointment-dialog {
+  width: min(calc(100% - 32px), 560px);
+  max-width: none;
+  margin: auto;
+}
+
+.appointment-dialog::backdrop {
+  background: rgb(39 53 51 / 45%);
+}
+
+.appointment-dialog .form-heading h2 {
+  margin: 0 0 9px;
+  color: var(--color-text);
+  font-size: 24px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+}
+
+.visit-details {
+  display: grid;
+  gap: 14px;
+  max-height: min(60vh, 560px);
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+
+.visit-detail {
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+  background: #f7f9f8;
+}
+
+.visit-detail h3 {
+  margin: 0 0 8px;
+  color: var(--color-text);
+  font-size: 13px;
+}
+
+.visit-detail p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.visit-addendum {
+  padding: 10px 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.visit-addendum-author {
+  margin-top: 6px !important;
+  font-size: 12px !important;
+}
+
+.dialog-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.client-form .dialog-actions .secondary-button,
+.client-form .dialog-actions .primary-button {
+  width: auto;
+  min-width: 130px;
+  margin: 0;
+  padding: 0 16px;
+}
+
 .client-footer {
   width: 100%;
   justify-content: center;
+  gap: 8px 20px;
   padding: 0 20px 20px;
 }
 
@@ -484,8 +656,19 @@ button {
   }
 
   .client-main {
+    width: min(100% - 32px, 760px);
     margin-top: 28px;
     margin-bottom: 28px;
+  }
+
+  .client-main:has(.client-table) {
+    width: min(100% - 32px, 1180px);
+  }
+
+  .client-header {
+    flex-wrap: wrap;
+    padding-top: 14px;
+    padding-bottom: 14px;
   }
 
   .client-form {
@@ -522,6 +705,15 @@ button {
   .client-form .field,
   .client-form .primary-button {
     grid-column: 1;
+  }
+
+  .dialog-actions {
+    flex-wrap: wrap;
+  }
+
+  .client-form .dialog-actions .secondary-button,
+  .client-form .dialog-actions .primary-button {
+    flex: 1 1 130px;
   }
 }
 

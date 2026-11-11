@@ -9,8 +9,8 @@ function renderClients(clientes) {
     const row = document.createElement("tr");
     const cell = document.createElement("td");
     cell.className = "empty-row";
-    cell.colSpan = 4;
-    cell.textContent = "Nenhum cliente encontrado.";
+    cell.colSpan = 5;
+    cell.textContent = "Nenhum cliente encontrado para os dados informados.";
     row.append(cell);
     clientList.append(row);
     return;
@@ -31,6 +31,19 @@ function renderClients(clientes) {
     status.textContent = ativo ? "Ativo" : "Inativo";
     statusCell.append(status);
     row.append(statusCell);
+
+    const actionsCell = document.createElement("td");
+    if (ativo) {
+      const inactivateButton = document.createElement("button");
+      inactivateButton.className = "client-inactivate-button";
+      inactivateButton.dataset.clientId = cliente.id;
+      inactivateButton.type = "button";
+      inactivateButton.textContent = "Inativar";
+      actionsCell.append(inactivateButton);
+    } else {
+      actionsCell.textContent = "—";
+    }
+    row.append(actionsCell);
     clientList.append(row);
   }
 }
@@ -38,6 +51,7 @@ function renderClients(clientes) {
 async function buscarClientes(termo = "") {
   const params = new URLSearchParams({ busca: termo });
   listMessage.textContent = "";
+  listMessage.classList.remove("is-success");
   clientList.replaceChildren();
 
   try {
@@ -46,13 +60,50 @@ async function buscarClientes(termo = "") {
 
     if (!response.ok) {
       listMessage.textContent = result.error || "Não foi possível carregar os clientes.";
-      return;
+      return false;
     }
     renderClients(result.clientes);
+    return true;
   } catch {
     listMessage.textContent = "Não foi possível conectar ao servidor. Tente novamente.";
+    return false;
   }
 }
+
+async function inativarCliente(button) {
+  const confirmado = window.confirm("Deseja realmente inativar este cliente?");
+  if (!confirmado) return;
+
+  listMessage.textContent = "";
+  listMessage.classList.remove("is-success");
+  button.disabled = true;
+  try {
+    const response = await fetch(`/api/clientes/${button.dataset.clientId}/inativar`, {
+      method: "PATCH",
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      listMessage.textContent = result.error || "Não foi possível inativar o cliente.";
+      button.disabled = false;
+      return;
+    }
+
+    const termo = new FormData(searchForm).get("busca").trim();
+    if (await buscarClientes(termo)) {
+      listMessage.textContent = result.message;
+      listMessage.classList.add("is-success");
+    }
+  } catch {
+    listMessage.textContent = "Não foi possível conectar ao servidor. Tente novamente.";
+    button.disabled = false;
+  }
+}
+
+clientList.addEventListener("click", (event) => {
+  const button = event.target.closest(".client-inactivate-button");
+  if (button) inativarCliente(button);
+});
 
 searchForm.addEventListener("submit", (event) => {
   event.preventDefault();

@@ -2,3 +2,4 @@ node_modules/
 /backend/data/users.json
 /backend/data/*.db
 /backend/data/*.db-*
+backups/

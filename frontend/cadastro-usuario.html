@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f7f6">
+    <meta name="description" content="Cadastro de usuário do Sistema de Gestão de Clínica Veterinária.">
+    <title>Criar conta | SGCV</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body class="client-page">
+    <header class="client-header">
+      <a class="brand" href="/" aria-label="SGCV, página inicial">
+        <span class="brand-mark" aria-hidden="true">S</span>
+        <span>SGCV</span>
+      </a>
+      <a class="client-back-link" href="/">Voltar ao sistema</a>
+    </header>
+
+    <main class="client-main">
+      <section class="client-card" aria-labelledby="user-form-title">
+        <header class="form-heading">
+          <p class="eyebrow">NOVO USUÁRIO</p>
+          <h1 id="user-form-title">Criar conta</h1>
+          <p>Informe seus dados para criar suas credenciais de acesso.</p>
+        </header>
+
+        <form class="client-form" autocomplete="on">
+          <div class="field field-full">
+            <label for="user-name">Nome completo</label>
+            <input id="user-name" name="nome" type="text" placeholder="Seu nome completo"
+              autocomplete="name">
+          </div>
+          <div class="field">
+            <label for="user-login">Login desejado</label>
+            <input id="user-login" name="login" type="text" placeholder="Escolha seu login"
+              autocomplete="username">
+          </div>
+          <div class="field">
+            <label for="user-profile">Perfil</label>
+            <select id="user-profile" name="perfil">
+              <option value="" selected>Selecione o perfil</option>
+              <option value="Recepcionista">Recepcionista</option>
+              <option value="Veterinário">Veterinário</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="user-password">Senha</label>
+            <input id="user-password" name="senha" type="password" placeholder="Digite sua senha"
+              autocomplete="new-password">
+          </div>
+          <div class="field">
+            <label for="user-password-confirm">Confirmar senha</label>
+            <input id="user-password-confirm" name="confirmar-senha" type="password"
+              placeholder="Digite novamente sua senha" autocomplete="new-password">
+          </div>
+          <button class="primary-button" type="button">Cadastrar</button>
+        </form>
+      </section>
+    </main>
+
+    <footer class="login-footer client-footer">
+      <span>SGCV</span>
+      <span>Sistema de Gestão de Clínica Veterinária</span>
+    </footer>
+  </body>
+</html>
