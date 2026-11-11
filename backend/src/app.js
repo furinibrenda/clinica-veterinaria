@@ -24,6 +24,24 @@ app.use("/api", (req, res, next) => {
 });
 
 app.get([
+  "/agenda",
+  "/agenda.html",
+], (req, res, next) => {
+  const authenticated = getSession(getSessionToken(req));
+  if (
+    !authenticated
+    || !["Recepcionista", "Veterinário"].includes(authenticated.user.perfil)
+  ) {
+    return res.redirect("/");
+  }
+
+  setSessionCookie(res, req, authenticated.token);
+  res.sendFile(path.join(publicDirectory, "agenda.html"), (error) => {
+    if (error) next(error);
+  });
+});
+
+app.get([
   "/clientes",
   "/clientes.html",
   "/clientes/novo",

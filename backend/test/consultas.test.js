@@ -116,7 +116,9 @@ test("agendamento valida horário, conflito e acesso de Recepcionista", async ()
 
   const visitante = request.agent(app);
   assert.equal((await visitante.get("/consultas/novo")).status, 302);
+  assert.equal((await visitante.get("/agenda")).status, 302);
   assert.equal((await visitante.get("/api/veterinarios")).status, 401);
+  assert.equal((await visitante.get("/api/consultas")).status, 401);
   assert.equal((await visitante.get(`/api/clientes/${tutorId}/animais`)).status, 401);
   assert.equal((await visitante.post("/api/consultas").send({})).status, 401);
 
@@ -131,6 +133,9 @@ test("agendamento valida horário, conflito e acesso de Recepcionista", async ()
   const pagina = await recepcionista.get("/consultas/novo");
   assert.equal(pagina.status, 200);
   assert.match(pagina.text, /Agendar consulta/);
+  const agenda = await recepcionista.get("/agenda");
+  assert.equal(agenda.status, 200);
+  assert.match(agenda.text, /Agenda de consultas/);
 
   const veterinarios = await recepcionista.get("/api/veterinarios");
   assert.deepEqual(veterinarios.body.veterinarios.map(({ id }) => id), [
@@ -151,6 +156,21 @@ test("agendamento valida horário, conflito e acesso de Recepcionista", async ()
   assert.equal(cadastro.status, 201);
   assert.equal(cadastro.body.consulta.status, StatusConsulta.AGENDADA);
   assert.equal(cadastro.body.consulta.agendado_por, recepcionistaId);
+  const consultasData = await recepcionista.get("/api/consultas").query({ data: dados.data });
+  assert.equal(consultasData.status, 200);
+  assert.equal(consultasData.body.consultas.length, 1);
+  assert.equal(consultasData.body.consultas[0].tutor, "Ana Silva");
+  assert.equal(consultasData.body.consultas[0].animal, "Rex");
+  assert.equal(consultasData.body.consultas[0].veterinario, "Veterinário A");
+  assert.equal(consultasData.body.consultas[0].status, StatusConsulta.AGENDADA);
+  assert.equal(
+    (await recepcionista.get("/api/consultas").query({ data: "2035-02-30" })).status,
+    400,
+  );
+  assert.equal(
+    (await recepcionista.get("/api/consultas").query({ veterinario_id: "abc" })).status,
+    400,
+  );
 
   const conflito = await recepcionista.post("/api/consultas").send(dados);
   assert.equal(conflito.status, 409);
@@ -174,6 +194,11 @@ test("agendamento valida horário, conflito e acesso de Recepcionista", async ()
     })).status,
     201,
   );
+  const consultasVeterinario = await recepcionista.get("/api/consultas").query({
+    veterinario_id: outroVeterinarioId,
+  });
+  assert.equal(consultasVeterinario.body.consultas.length, 1);
+  assert.equal(consultasVeterinario.body.consultas[0].veterinario, "Veterinário B");
 
   const veterinario = request.agent(app);
   assert.equal(
@@ -181,7 +206,11 @@ test("agendamento valida horário, conflito e acesso de Recepcionista", async ()
     200,
   );
   assert.equal((await veterinario.get("/consultas/novo")).status, 302);
+  const agendaVeterinario = await veterinario.get("/agenda");
+  assert.equal(agendaVeterinario.status, 200);
   assert.equal((await veterinario.get("/api/veterinarios")).status, 403);
+  assert.equal((await veterinario.get("/api/agenda/veterinarios")).status, 200);
+  assert.equal((await veterinario.get("/api/consultas")).status, 200);
   assert.equal((await veterinario.get(`/api/clientes/${tutorId}/animais`)).status, 403);
   assert.equal((await veterinario.post("/api/consultas").send(dados)).status, 403);
 });

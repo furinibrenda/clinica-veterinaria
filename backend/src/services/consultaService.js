@@ -20,6 +20,12 @@ const veterinariosAtivos = db.prepare(`
   WHERE perfil = 'Veterinário' AND ativo = 1
   ORDER BY nome COLLATE NOCASE, id
 `);
+const veterinariosDaAgenda = db.prepare(`
+  SELECT id, nome
+  FROM usuarios
+  WHERE perfil = 'Veterinário'
+  ORDER BY nome COLLATE NOCASE, id
+`);
 const animaisAtivosDoTutor = db.prepare(`
   SELECT id, nome, especie
   FROM animais
@@ -29,6 +35,17 @@ const animaisAtivosDoTutor = db.prepare(`
 const inserirConsulta = db.prepare(`
   INSERT INTO consultas (animal_id, veterinario_id, agendado_por, data, hora, status)
   VALUES (@animal_id, @veterinario_id, @agendado_por, @data, @hora, @status)
+`);
+const consultasDaAgenda = db.prepare(`
+  SELECT consultas.data, consultas.hora, consultas.status,
+    clientes.nome AS tutor, animais.nome AS animal, usuarios.nome AS veterinario
+  FROM consultas
+  JOIN animais ON animais.id = consultas.animal_id
+  JOIN clientes ON clientes.id = animais.cliente_id
+  JOIN usuarios ON usuarios.id = consultas.veterinario_id
+  WHERE (@data IS NULL OR consultas.data = @data)
+    AND (@veterinario_id IS NULL OR consultas.veterinario_id = @veterinario_id)
+  ORDER BY consultas.data, consultas.hora, usuarios.nome COLLATE NOCASE
 `);
 
 function consultaError(message, status) {
@@ -70,6 +87,35 @@ function validarDataHora(data, hora) {
 
 function listarVeterinarios() {
   return veterinariosAtivos.all();
+}
+
+function listarVeterinariosDaAgenda() {
+  return veterinariosDaAgenda.all();
+}
+
+function listarConsultas(filtros) {
+  const data = filtros?.data ?? null;
+  const veterinarioId = filtros?.veterinario_id ?? null;
+
+  if (
+    data !== null
+    && (
+      typeof data !== "string"
+      || !/^\d{4}-\d{2}-\d{2}$/.test(data)
+      || Number.isNaN(new Date(`${data}T00:00:00.000Z`).getTime())
+      || new Date(`${data}T00:00:00.000Z`).toISOString().slice(0, 10) !== data
+    )
+  ) {
+    throw consultaError("Informe uma data válida.", 400);
+  }
+  if (
+    veterinarioId !== null
+    && (!Number.isSafeInteger(veterinarioId) || veterinarioId < 1)
+  ) {
+    throw consultaError("Selecione um veterinário válido.", 400);
+  }
+
+  return consultasDaAgenda.all({ data, veterinario_id: veterinarioId });
 }
 
 function listarAnimaisAtivosDoTutor(tutorId) {
@@ -134,4 +180,10 @@ function agendarConsulta(dados, recepcionistaId) {
   return agendar();
 }
 
-module.exports = { agendarConsulta, listarAnimaisAtivosDoTutor, listarVeterinarios };
+module.exports = {
+  agendarConsulta,
+  listarAnimaisAtivosDoTutor,
+  listarConsultas,
+  listarVeterinarios,
+  listarVeterinariosDaAgenda,
+};
