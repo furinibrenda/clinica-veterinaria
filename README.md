@@ -1,4 +1,4 @@
-# SGCV - Sistema de Gestão de Clínica Veterinária
+g# SGCV - Sistema de Gestão de Clínica Veterinária
 
 Projeto da disciplina de Análise e Projeto de Sistemas.  
 Autora: Brenda Furini Cardoso
@@ -19,24 +19,51 @@ JavaScript, Node.js, Express 5, SQLite (`better-sqlite3`) e `bcryptjs`.
 
 ## Como executar
 
-1. Abra a pasta `backend` do projeto no terminal (`cd backend`).
-2. No PowerShell, instale as dependências com `npm.cmd install`.
-3. Crie os acessos iniciais com `npm.cmd run seed`.
-4. Anote os logins e senhas exibidos no terminal. As senhas são aleatórias,
-   mostradas somente quando as contas são criadas e armazenadas no banco apenas
-   como hash bcrypt.
-5. Inicie o sistema com `npm.cmd start`.
-6. Acesse [http://localhost:3000](http://localhost:3000).
+Os comandos devem ser executados no diretório `backend`, onde está o
+`package.json`:
 
-O banco SQLite é criado em `data/sgcv.db`. O script de seed pode ser executado
-novamente sem alterar as senhas de contas já criadas. Não remova o banco para
-recuperar uma senha: isso também excluiria os demais dados. O arquivo legado
-`data/users.json` é mantido intacto, mas não é mais usado para autenticação. Os
-hashes legados não podem ser convertidos para bcrypt sem as senhas originais;
-por isso, os acessos antigos precisam ser recriados pelo seed.
+1. `npm install` — instala as dependências do projeto.
+2. `npm run seed` — cria ou atualiza os usuários de teste no banco SQLite.
+3. `npm start` — inicia o servidor. Acesse
+   [http://localhost:3000](http://localhost:3000).
+4. `npm test` — executa os testes automatizados. Como `npm start` mantém o
+   servidor em execução, rode os testes em outro terminal, também no diretório
+   `backend`.
+
+O banco SQLite é criado em `backend/data/sgcv.db`. As senhas dos usuários de
+teste são armazenadas no banco como hash bcrypt.
+
+| Perfil | Login | Senha |
+|---|---|---|
+| Veterinário | `veterinario` | `Vet123@4` |
+| Recepcionista | `recepcionista` | `Recep123@` |
 
 As sessões expiram após 30 minutos sem atividade. O cadastro público foi
 removido; a criação de contas é feita pelo seed.
 
-Veja [a documentação do backend](backend/README.md) para a estrutura em camadas,
-configuração, contratos da API e testes (`npm.cmd test` na pasta `backend`).
+## Status dos requisitos
+
+O repositório não contém um catálogo com a descrição de todos os requisitos.
+IDs sem descrição verificável são mantidos como planejados, sem atribuir a eles
+funcionalidades por suposição.
+
+| Requisito | Descrição disponível ou evidência | Status |
+|---|---|---|
+| RF-01 | Descrição não disponível no repositório. | Planejado |
+| RF-02 | Descrição não disponível no repositório. | Planejado |
+| RF-03 | Descrição não disponível no repositório. | Planejado |
+| RF-04 | Alteração de data, horário e veterinário de consulta agendada. | Implementado |
+| RF-05 | Descrição não disponível no repositório. | Planejado |
+| RF-06 | Descrição não disponível no repositório. | Planejado |
+| RF-07 | Descrição não disponível no repositório. | Planejado |
+| RF-08 | Descrição não disponível no repositório. | Planejado |
+| RF-09 | Descrição não disponível no repositório. | Planejado |
+| RF-10 | Descrição não disponível no repositório. | Planejado |
+| RF-11 | Registro de adendos sem alterar o diagnóstico original. | Implementado |
+| RNF-01 | Descrição não disponível no repositório. | Planejado |
+| RNF-02 | Descrição não disponível no repositório. | Planejado |
+| RNF-03 | Não verificado. | Planejado |
+| RNF-04 | Não verificado. | Planejado |
+| RNF-05 | Backup diário do banco, com retenção das sete cópias mais recentes. | Implementado |
+
+RNF-03 e RNF-04 não foram verificados.
