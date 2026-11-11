@@ -1,6 +1,7 @@
 const {
   agendarConsulta: criarConsulta,
   alterarConsulta: atualizarConsulta,
+  buscarAtendimento: consultarAtendimento,
   cancelarConsulta: marcarConsultaCancelada,
   listarAnimaisAtivosDoTutor: buscarAnimaisAtivosDoTutor,
   listarConsultas: buscarConsultas,
@@ -28,6 +29,7 @@ function listarConsultas(req, res, next) {
       pode_cancelar: req.user.perfil === "Recepcionista",
       pode_alterar: req.user.perfil === "Recepcionista",
       pode_registrar_atendimento: req.user.perfil === "Veterinário",
+      pode_ver_atendimento: true,
     });
   } catch (error) {
     if (error.status === 400) {
@@ -88,6 +90,22 @@ function registrarAtendimento(req, res, next) {
   }
 }
 
+function buscarAtendimento(req, res, next) {
+  const id = Number(req.params.id);
+  if (!Number.isSafeInteger(id) || id < 1) {
+    return res.status(400).json({ error: "Identificador de consulta inválido." });
+  }
+
+  try {
+    res.json(consultarAtendimento(id));
+  } catch (error) {
+    if ([404, 409].includes(error.status)) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    next(error);
+  }
+}
+
 function listarVeterinarios(req, res) {
   res.json({ veterinarios: buscarVeterinarios() });
 }
@@ -119,6 +137,7 @@ function agendarConsulta(req, res, next) {
 module.exports = {
   agendarConsulta,
   alterarConsulta,
+  buscarAtendimento,
   cancelarConsulta,
   listarAnimaisDoTutor,
   listarConsultas,

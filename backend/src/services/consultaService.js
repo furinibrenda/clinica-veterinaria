@@ -1,4 +1,5 @@
 const { db } = require("../../database");
+const Adendo = require("../models/adendo");
 const Atendimento = require("../models/atendimento");
 const Consulta = require("../models/consulta");
 const StatusConsulta = require("../models/statusConsulta");
@@ -79,6 +80,20 @@ const atendimentoPorId = db.prepare(`
   SELECT id, consulta_id, veterinario_id, sintomas, observacoes, prescricao, diagnostico, criado_em
   FROM atendimentos
   WHERE id = ?
+`);
+const atendimentoDaConsulta = db.prepare(`
+  SELECT atendimentos.id, atendimentos.consulta_id, atendimentos.veterinario_id,
+    atendimentos.sintomas, atendimentos.observacoes, atendimentos.prescricao,
+    atendimentos.diagnostico, atendimentos.criado_em
+  FROM atendimentos
+  JOIN consultas ON consultas.id = atendimentos.consulta_id
+  WHERE consultas.id = @id AND consultas.status = @realizada
+`);
+const adendosDoAtendimento = db.prepare(`
+  SELECT id, atendimento_id, autor_id, texto, criado_em
+  FROM adendos
+  WHERE atendimento_id = ?
+  ORDER BY criado_em, id
 `);
 const marcarConsultaRealizada = db.prepare(`
   UPDATE consultas
@@ -261,6 +276,24 @@ function registrarAtendimento(id, dados, veterinarioId) {
   return registrar();
 }
 
+function buscarAtendimento(id) {
+  const dadosAtendimento = atendimentoDaConsulta.get({
+    id,
+    realizada: StatusConsulta.REALIZADA,
+  });
+  if (!dadosAtendimento) {
+    const consulta = consultaPorId.get(id);
+    if (!consulta) throw consultaError("Consulta não encontrada.", 404);
+    throw consultaError("A consulta não possui atendimento realizado.", 409);
+  }
+
+  const atendimento = new Atendimento(dadosAtendimento);
+  const adendos = adendosDoAtendimento.all(atendimento.id).map(
+    (adendo) => new Adendo(adendo),
+  );
+  return { atendimento, adendos };
+}
+
 function listarAnimaisAtivosDoTutor(tutorId) {
   return animaisAtivosDoTutor.all(tutorId);
 }
@@ -326,6 +359,7 @@ function agendarConsulta(dados, recepcionistaId) {
 module.exports = {
   agendarConsulta,
   alterarConsulta,
+  buscarAtendimento,
   cancelarConsulta,
   listarAnimaisAtivosDoTutor,
   listarConsultas,

@@ -2,6 +2,7 @@ const express = require("express");
 const {
   agendarConsulta,
   alterarConsulta,
+  buscarAtendimento,
   cancelarConsulta,
   listarAnimaisDoTutor,
   listarConsultas,
@@ -18,6 +19,12 @@ router.get(
   requireAuth,
   requireProfile("Recepcionista", "Veterinário"),
   listarConsultas,
+);
+router.get(
+  "/consultas/:id/atendimento",
+  requireAuth,
+  requireProfile("Recepcionista", "Veterinário"),
+  buscarAtendimento,
 );
 router.patch(
   "/consultas/:id",

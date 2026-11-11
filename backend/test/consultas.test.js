@@ -307,6 +307,7 @@ test("agendamento valida horário, conflito e acesso de Recepcionista", async ()
   assert.equal(agendaVeterinarioApi.body.pode_cancelar, false);
   assert.equal(agendaVeterinarioApi.body.pode_alterar, false);
   assert.equal(agendaVeterinarioApi.body.pode_registrar_atendimento, true);
+  assert.equal(agendaVeterinarioApi.body.pode_ver_atendimento, true);
   assert.equal(
     (await veterinario.patch(`/api/consultas/${reagendamento.body.consulta.id}/cancelar`)).status,
     403,
@@ -323,6 +324,8 @@ test("agendamento valida horário, conflito e acesso de Recepcionista", async ()
     })).status,
     403,
   );
+  assert.equal((await recepcionista.get("/api/consultas/0/atendimento")).status, 400);
+  assert.equal((await recepcionista.get("/api/consultas/99999/atendimento")).status, 404);
 
   const consultaParaAtendimento = await recepcionista.post("/api/consultas").send({
     ...dados,
@@ -330,6 +333,10 @@ test("agendamento valida horário, conflito e acesso de Recepcionista", async ()
   });
   assert.equal(consultaParaAtendimento.status, 201);
   const consultaAtendimentoId = consultaParaAtendimento.body.consulta.id;
+  assert.equal(
+    (await veterinario.get(`/api/consultas/${consultaAtendimentoId}/atendimento`)).status,
+    409,
+  );
   const semDiagnostico = await veterinario.post(
     `/api/consultas/${consultaAtendimentoId}/atendimento`,
   ).send({ sintomas: "Coceira" });
@@ -356,6 +363,26 @@ test("agendamento valida horário, conflito e acesso de Recepcionista", async ()
     db.prepare("SELECT COUNT(*) AS total FROM atendimentos WHERE consulta_id = ?")
       .get(consultaAtendimentoId).total,
     1,
+  );
+  assert.equal(
+    (await recepcionista.get(`/api/consultas/${consultaAtendimentoId}/atendimento`)).status,
+    200,
+  );
+  const adendoTexto = "Retorno recomendado em sete dias.";
+  db.prepare(`
+    INSERT INTO adendos (atendimento_id, autor_id, texto)
+    VALUES (?, ?, ?)
+  `).run(registro.body.atendimento.id, veterinarioId, adendoTexto);
+  const atendimentoVisualizado = await veterinario.get(
+    `/api/consultas/${consultaAtendimentoId}/atendimento`,
+  );
+  assert.equal(atendimentoVisualizado.status, 200);
+  assert.deepEqual(atendimentoVisualizado.body.atendimento, registro.body.atendimento);
+  assert.equal(atendimentoVisualizado.body.adendos.length, 1);
+  assert.equal(atendimentoVisualizado.body.adendos[0].texto, adendoTexto);
+  assert.equal(
+    (await recepcionista.get(`/api/consultas/${consultaAtendimentoId}/atendimento`)).status,
+    200,
   );
   const atendimentoDuplicado = await veterinario.post(
     `/api/consultas/${consultaAtendimentoId}/atendimento`,
