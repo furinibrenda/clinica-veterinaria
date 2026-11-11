@@ -1,5 +1,6 @@
 const { db } = require("../../database");
 const Animal = require("../models/animal");
+const StatusConsulta = require("../models/statusConsulta");
 
 const tutorPorId = db.prepare("SELECT id, ativo FROM clientes WHERE id = ?");
 const inserirAnimal = db.prepare(`
@@ -15,6 +16,12 @@ const buscarAnimais = db.prepare(`
 `);
 const inativarAnimalPorId = db.prepare("UPDATE animais SET ativo = 0 WHERE id = ?");
 const animalPorId = db.prepare("SELECT id FROM animais WHERE id = ?");
+const consultaAgendadaDoAnimal = db.prepare(`
+  SELECT 1
+  FROM consultas
+  WHERE animal_id = ? AND status = ?
+  LIMIT 1
+`);
 
 function animalError(message, status) {
   const error = new Error(message);
@@ -82,11 +89,15 @@ function listarAnimais() {
 }
 
 function inativarAnimal(id) {
-  // TODO(RN-10): Impedir a inativação de animal com consulta "Agendada".
-  const resultado = inativarAnimalPorId.run(id);
-  if (resultado.changes === 0 && !animalPorId.get(id)) {
-    throw animalError("Animal não encontrado.", 404);
-  }
+  const inativar = db.transaction(() => {
+    if (!animalPorId.get(id)) throw animalError("Animal não encontrado.", 404);
+    if (consultaAgendadaDoAnimal.get(id, StatusConsulta.AGENDADA)) {
+      throw animalError("Não é possível inativar o animal porque possui consulta agendada.", 409);
+    }
+    inativarAnimalPorId.run(id);
+  });
+
+  inativar();
 }
 
 module.exports = { cadastrarAnimal, inativarAnimal, listarAnimais };

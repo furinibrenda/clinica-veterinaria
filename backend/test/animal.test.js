@@ -120,6 +120,31 @@ test("cadastro de animal permite apenas Recepcionista", async () => {
       && animal.tutor === "Ana Silva"),
     true,
   );
+  const veterinarioId = db.prepare("SELECT id FROM usuarios WHERE login = ?").get("vet").id;
+  const consultaId = Number(db.prepare(`
+    INSERT INTO consultas (animal_id, veterinario_id, agendado_por, data, hora)
+    VALUES (?, ?, ?, ?, ?)
+  `).run(
+    cadastro.body.animal.id,
+    veterinarioId,
+    veterinarioId,
+    "2035-05-10",
+    "10:00",
+  ).lastInsertRowid);
+  const animalComConsulta = await recepcionista.patch(
+    `/api/animais/${cadastro.body.animal.id}/inativar`,
+  );
+  assert.equal(animalComConsulta.status, 409);
+  assert.equal(
+    animalComConsulta.body.error,
+    "Não é possível inativar o animal porque possui consulta agendada.",
+  );
+  assert.equal(
+    db.prepare("SELECT ativo FROM animais WHERE id = ?").get(cadastro.body.animal.id).ativo,
+    1,
+  );
+  db.prepare("UPDATE consultas SET status = 'CANCELADA' WHERE id = ?").run(consultaId);
+
   const dadosAntesInativar = db.prepare(`
     SELECT cliente_id, nome, especie, raca, data_nascimento
     FROM animais WHERE id = ?

@@ -48,6 +48,36 @@ test("cadastro e listagem de clientes permitem apenas Recepcionista", async () =
   const cadastro = await recepcionista.post("/api/clientes").send(dadosCliente);
   assert.equal(cadastro.status, 201);
   assert.equal(cadastro.body.cliente.nome, dadosCliente.nome);
+
+  const veterinarioId = db.prepare("SELECT id FROM usuarios WHERE login = ?").get("vet").id;
+  const animalId = Number(db.prepare(`
+    INSERT INTO animais (cliente_id, nome, especie)
+    VALUES (?, ?, ?)
+  `).run(cadastro.body.cliente.id, "Rex", "Cão").lastInsertRowid);
+  const consultaId = Number(db.prepare(`
+    INSERT INTO consultas (animal_id, veterinario_id, agendado_por, data, hora)
+    VALUES (?, ?, ?, ?, ?)
+  `).run(
+    animalId,
+    veterinarioId,
+    veterinarioId,
+    "2035-05-10",
+    "10:00",
+  ).lastInsertRowid);
+  const clienteComConsulta = await recepcionista.patch(
+    `/api/clientes/${cadastro.body.cliente.id}/inativar`,
+  );
+  assert.equal(clienteComConsulta.status, 409);
+  assert.equal(
+    clienteComConsulta.body.error,
+    "Não é possível inativar o cliente porque possui animal com consulta agendada.",
+  );
+  assert.equal(
+    db.prepare("SELECT ativo FROM clientes WHERE id = ?").get(cadastro.body.cliente.id).ativo,
+    1,
+  );
+  db.prepare("UPDATE consultas SET status = 'CANCELADA' WHERE id = ?").run(consultaId);
+
   const totalClientesAntesInativar = db.prepare("SELECT COUNT(*) AS total FROM clientes").get().total;
   const dadosAntesInativar = db.prepare(
     "SELECT nome, cpf, telefone, email, endereco FROM clientes WHERE id = ?",

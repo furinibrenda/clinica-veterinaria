@@ -30,7 +30,7 @@ function inativarAnimal(req, res, next) {
     marcarAnimalInativo(id);
     res.json({ message: "Animal inativado com sucesso." });
   } catch (error) {
-    if (error.status === 404) {
+    if ([404, 409].includes(error.status)) {
       return res.status(error.status).json({ error: error.message });
     }
     next(error);

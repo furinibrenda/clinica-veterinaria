@@ -1,5 +1,6 @@
 const { db } = require("../../database");
 const Cliente = require("../models/cliente");
+const StatusConsulta = require("../models/statusConsulta");
 
 const clientePorCpf = db.prepare(`
   SELECT id FROM clientes
@@ -15,6 +16,13 @@ const inativarClientePorId = db.prepare(`
   WHERE id = ?
 `);
 const clientePorId = db.prepare("SELECT id FROM clientes WHERE id = ?");
+const consultaAgendadaDoCliente = db.prepare(`
+  SELECT 1
+  FROM consultas
+  JOIN animais ON animais.id = consultas.animal_id
+  WHERE animais.cliente_id = ? AND consultas.status = ?
+  LIMIT 1
+`);
 const buscarClientes = db.prepare(`
   SELECT id, nome, cpf, telefone, ativo
   FROM clientes
@@ -82,11 +90,18 @@ function listarClientes(busca = "") {
 }
 
 function inativarCliente(id) {
-  // TODO(RN-10): Quando a tabela de consultas existir, impedir cliente com consulta "Agendada".
-  const resultado = inativarClientePorId.run(id);
-  if (resultado.changes === 0 && !clientePorId.get(id)) {
-    throw clienteError("Cliente não encontrado.", 404);
-  }
+  const inativar = db.transaction(() => {
+    if (!clientePorId.get(id)) throw clienteError("Cliente não encontrado.", 404);
+    if (consultaAgendadaDoCliente.get(id, StatusConsulta.AGENDADA)) {
+      throw clienteError(
+        "Não é possível inativar o cliente porque possui animal com consulta agendada.",
+        409,
+      );
+    }
+    inativarClientePorId.run(id);
+  });
+
+  inativar();
 }
 
 module.exports = { cadastrarCliente, listarClientes, inativarCliente };

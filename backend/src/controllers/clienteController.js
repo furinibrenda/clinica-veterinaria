@@ -35,7 +35,7 @@ function inativarCliente(req, res, next) {
     marcarClienteInativo(id);
     res.json({ message: "Cliente inativado com sucesso." });
   } catch (error) {
-    if (error.status === 404) {
+    if ([404, 409].includes(error.status)) {
       return res.status(error.status).json({ error: error.message });
     }
     next(error);
