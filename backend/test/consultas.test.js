@@ -6,6 +6,8 @@ process.env.SGCV_DB_PATH = ":memory:";
 const bcrypt = require("bcryptjs");
 const request = require("supertest");
 const { db } = require("../database");
+const Adendo = require("../src/models/adendo");
+const Atendimento = require("../src/models/atendimento");
 const Consulta = require("../src/models/consulta");
 const StatusConsulta = require("../src/models/statusConsulta");
 const Veterinario = require("../src/models/veterinario");
@@ -31,6 +33,26 @@ test("Consulta usa AGENDADA como status inicial", () => {
   });
 
   assert.equal(consulta.status, StatusConsulta.AGENDADA);
+});
+
+test("Atendimento e Adendo armazenam seus dados", () => {
+  const atendimento = new Atendimento({
+    consulta_id: 1,
+    veterinario_id: 2,
+    diagnostico: "Otite",
+  });
+  const adendo = new Adendo({
+    atendimento_id: 1,
+    autor_id: 2,
+    texto: "Reavaliar em sete dias.",
+  });
+
+  assert.equal(atendimento.consulta_id, 1);
+  assert.equal(atendimento.sintomas, null);
+  assert.equal(atendimento.diagnostico, "Otite");
+  assert.equal(adendo.atendimento_id, 1);
+  assert.equal(adendo.autor_id, 2);
+  assert.equal(adendo.texto, "Reavaliar em sete dias.");
 });
 
 test("Veterinario verifica conflito somente com consulta AGENDADA no mesmo horário", () => {
@@ -120,6 +142,7 @@ test("agendamento valida horário, conflito e acesso de Recepcionista", async ()
   assert.equal((await visitante.get("/api/veterinarios")).status, 401);
   assert.equal((await visitante.get("/api/consultas")).status, 401);
   assert.equal((await visitante.patch("/api/consultas/1/cancelar")).status, 401);
+  assert.equal((await visitante.post("/api/consultas/1/atendimento").send({})).status, 401);
   assert.equal((await visitante.get(`/api/clientes/${tutorId}/animais`)).status, 401);
   assert.equal((await visitante.post("/api/consultas").send({})).status, 401);
 
@@ -166,6 +189,7 @@ test("agendamento valida horário, conflito e acesso de Recepcionista", async ()
   assert.equal(consultasData.body.consultas[0].status, StatusConsulta.AGENDADA);
   assert.equal(consultasData.body.pode_cancelar, true);
   assert.equal(consultasData.body.pode_alterar, true);
+  assert.equal(consultasData.body.pode_registrar_atendimento, false);
   assert.equal(
     (await recepcionista.get("/api/consultas").query({ data: "2035-02-30" })).status,
     400,
@@ -282,6 +306,7 @@ test("agendamento valida horário, conflito e acesso de Recepcionista", async ()
   assert.equal(agendaVeterinarioApi.status, 200);
   assert.equal(agendaVeterinarioApi.body.pode_cancelar, false);
   assert.equal(agendaVeterinarioApi.body.pode_alterar, false);
+  assert.equal(agendaVeterinarioApi.body.pode_registrar_atendimento, true);
   assert.equal(
     (await veterinario.patch(`/api/consultas/${reagendamento.body.consulta.id}/cancelar`)).status,
     403,
@@ -292,4 +317,48 @@ test("agendamento valida horário, conflito e acesso de Recepcionista", async ()
   );
   assert.equal((await veterinario.get(`/api/clientes/${tutorId}/animais`)).status, 403);
   assert.equal((await veterinario.post("/api/consultas").send(dados)).status, 403);
+  assert.equal(
+    (await recepcionista.post("/api/consultas/1/atendimento").send({
+      diagnostico: "Consulta de rotina",
+    })).status,
+    403,
+  );
+
+  const consultaParaAtendimento = await recepcionista.post("/api/consultas").send({
+    ...dados,
+    hora: "09:00",
+  });
+  assert.equal(consultaParaAtendimento.status, 201);
+  const consultaAtendimentoId = consultaParaAtendimento.body.consulta.id;
+  const semDiagnostico = await veterinario.post(
+    `/api/consultas/${consultaAtendimentoId}/atendimento`,
+  ).send({ sintomas: "Coceira" });
+  assert.equal(semDiagnostico.status, 400);
+  assert.equal(semDiagnostico.body.error, "Informe o diagnóstico.");
+
+  const registro = await veterinario.post(
+    `/api/consultas/${consultaAtendimentoId}/atendimento`,
+  ).send({
+    sintomas: "Coceira",
+    observacoes: "Sem lesões aparentes.",
+    prescricao: "Uso tópico.",
+    diagnostico: "Dermatite leve",
+  });
+  assert.equal(registro.status, 201);
+  assert.equal(registro.body.atendimento.consulta_id, consultaAtendimentoId);
+  assert.equal(registro.body.atendimento.veterinario_id, veterinarioId);
+  assert.equal(registro.body.atendimento.diagnostico, "Dermatite leve");
+  assert.equal(
+    db.prepare("SELECT status FROM consultas WHERE id = ?").get(consultaAtendimentoId).status,
+    StatusConsulta.REALIZADA,
+  );
+  assert.equal(
+    db.prepare("SELECT COUNT(*) AS total FROM atendimentos WHERE consulta_id = ?")
+      .get(consultaAtendimentoId).total,
+    1,
+  );
+  const atendimentoDuplicado = await veterinario.post(
+    `/api/consultas/${consultaAtendimentoId}/atendimento`,
+  ).send({ diagnostico: "Outro diagnóstico" });
+  assert.equal(atendimentoDuplicado.status, 409);
 });

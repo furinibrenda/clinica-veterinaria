@@ -7,6 +7,7 @@ const {
   listarConsultas,
   listarVeterinarios,
   listarVeterinariosDaAgenda,
+  registrarAtendimento,
 } = require("../controllers/consultaController");
 const { requireAuth, requireProfile } = require("../middleware/accessControl");
 const { jsonObjectBody } = require("../middleware/validateJsonObject");
@@ -24,6 +25,13 @@ router.patch(
   requireProfile("Recepcionista"),
   jsonObjectBody,
   alterarConsulta,
+);
+router.post(
+  "/consultas/:id/atendimento",
+  requireAuth,
+  requireProfile("Veterinário"),
+  jsonObjectBody,
+  registrarAtendimento,
 );
 router.patch(
   "/consultas/:id/cancelar",

@@ -6,6 +6,7 @@ const {
   listarConsultas: buscarConsultas,
   listarVeterinarios: buscarVeterinarios,
   listarVeterinariosDaAgenda: buscarVeterinariosDaAgenda,
+  registrarAtendimento: criarAtendimento,
 } = require("../services/consultaService");
 
 function listarConsultas(req, res, next) {
@@ -26,6 +27,7 @@ function listarConsultas(req, res, next) {
       }),
       pode_cancelar: req.user.perfil === "Recepcionista",
       pode_alterar: req.user.perfil === "Recepcionista",
+      pode_registrar_atendimento: req.user.perfil === "Veterinário",
     });
   } catch (error) {
     if (error.status === 400) {
@@ -61,6 +63,23 @@ function alterarConsulta(req, res, next) {
   try {
     const consulta = atualizarConsulta(id, req.body);
     res.json({ consulta, message: "Consulta alterada com sucesso." });
+  } catch (error) {
+    if ([400, 404, 409].includes(error.status)) {
+      return res.status(error.status).json({ error: error.message });
+    }
+    next(error);
+  }
+}
+
+function registrarAtendimento(req, res, next) {
+  const id = Number(req.params.id);
+  if (!Number.isSafeInteger(id) || id < 1) {
+    return res.status(400).json({ error: "Identificador de consulta inválido." });
+  }
+
+  try {
+    const atendimento = criarAtendimento(id, req.body, req.user.id);
+    res.status(201).json({ atendimento, message: "Atendimento registrado com sucesso." });
   } catch (error) {
     if ([400, 404, 409].includes(error.status)) {
       return res.status(error.status).json({ error: error.message });
@@ -105,4 +124,5 @@ module.exports = {
   listarConsultas,
   listarVeterinarios,
   listarVeterinariosDaAgenda,
+  registrarAtendimento,
 };

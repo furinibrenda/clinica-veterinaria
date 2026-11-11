@@ -1,4 +1,5 @@
 const { db } = require("../../database");
+const Atendimento = require("../models/atendimento");
 const Consulta = require("../models/consulta");
 const StatusConsulta = require("../models/statusConsulta");
 const Veterinario = require("../models/veterinario");
@@ -63,6 +64,27 @@ const alterarConsultaPorId = db.prepare(`
   WHERE id = @id AND status = @status
 `);
 const statusConsultaPorId = db.prepare("SELECT status FROM consultas WHERE id = ?");
+const atendimentoPorConsulta = db.prepare(
+  "SELECT id FROM atendimentos WHERE consulta_id = ?",
+);
+const inserirAtendimento = db.prepare(`
+  INSERT INTO atendimentos (
+    consulta_id, veterinario_id, sintomas, observacoes, prescricao, diagnostico
+  )
+  VALUES (
+    @consulta_id, @veterinario_id, @sintomas, @observacoes, @prescricao, @diagnostico
+  )
+`);
+const atendimentoPorId = db.prepare(`
+  SELECT id, consulta_id, veterinario_id, sintomas, observacoes, prescricao, diagnostico, criado_em
+  FROM atendimentos
+  WHERE id = ?
+`);
+const marcarConsultaRealizada = db.prepare(`
+  UPDATE consultas
+  SET status = @realizada
+  WHERE id = @id AND status = @agendada
+`);
 
 function consultaError(message, status) {
   const error = new Error(message);
@@ -193,6 +215,52 @@ function alterarConsulta(id, dados) {
   return alterar();
 }
 
+function registrarAtendimento(id, dados, veterinarioId) {
+  if (typeof dados?.diagnostico !== "string" || !dados.diagnostico.trim()) {
+    throw consultaError("Informe o diagnóstico.", 400);
+  }
+  for (const campo of ["sintomas", "observacoes", "prescricao"]) {
+    if (dados[campo] != null && typeof dados[campo] !== "string") {
+      throw consultaError(`Informe ${campo} em texto válido.`, 400);
+    }
+  }
+
+  const registrar = db.transaction(() => {
+    const consulta = consultaPorId.get(id);
+    if (!consulta) throw consultaError("Consulta não encontrada.", 404);
+    if (consulta.status !== StatusConsulta.AGENDADA) {
+      throw consultaError("Somente consultas agendadas podem receber atendimento.", 409);
+    }
+    if (atendimentoPorConsulta.get(id)) {
+      throw consultaError("Esta consulta já possui um atendimento registrado.", 409);
+    }
+
+    const resultado = inserirAtendimento.run({
+      consulta_id: id,
+      veterinario_id: veterinarioId,
+      sintomas: typeof dados.sintomas === "string" ? dados.sintomas.trim() || null : null,
+      observacoes: typeof dados.observacoes === "string"
+        ? dados.observacoes.trim() || null
+        : null,
+      prescricao: typeof dados.prescricao === "string" ? dados.prescricao.trim() || null : null,
+      diagnostico: dados.diagnostico.trim(),
+    });
+    const atendimento = new Atendimento(atendimentoPorId.get(Number(resultado.lastInsertRowid)));
+    const atualizacao = marcarConsultaRealizada.run({
+      id,
+      realizada: StatusConsulta.REALIZADA,
+      agendada: StatusConsulta.AGENDADA,
+    });
+    if (atualizacao.changes !== 1) {
+      throw consultaError("Somente consultas agendadas podem receber atendimento.", 409);
+    }
+
+    return atendimento;
+  });
+
+  return registrar();
+}
+
 function listarAnimaisAtivosDoTutor(tutorId) {
   return animaisAtivosDoTutor.all(tutorId);
 }
@@ -263,4 +331,5 @@ module.exports = {
   listarConsultas,
   listarVeterinarios,
   listarVeterinariosDaAgenda,
+  registrarAtendimento,
 };
