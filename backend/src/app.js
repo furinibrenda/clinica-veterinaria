@@ -4,6 +4,7 @@ const { publicDirectory } = require("./config");
 const authRoutes = require("./routes/authRoutes");
 const animalRoutes = require("./routes/animalRoutes");
 const clienteRoutes = require("./routes/clienteRoutes");
+const consultaRoutes = require("./routes/consultaRoutes");
 const { securityHeaders } = require("./middleware/securityHeaders");
 const { errorHandler } = require("./middleware/errorHandler");
 const { getSession } = require("./services/sessionService");
@@ -18,7 +19,7 @@ app.use(securityHeaders);
 app.use("/api", (req, res, next) => {
   res.set("Cache-Control", "no-store");
   next();
-}, authRoutes, animalRoutes, clienteRoutes, (req, res) => {
+}, authRoutes, animalRoutes, clienteRoutes, consultaRoutes, (req, res) => {
   res.status(404).json({ error: "Rota não encontrada." });
 });
 
@@ -31,6 +32,8 @@ app.get([
   "/animais.html",
   "/animais/novo",
   "/cadastro-animal.html",
+  "/consultas/novo",
+  "/agendar-consulta.html",
 ], (req, res, next) => {
   const authenticated = getSession(getSessionToken(req));
   if (!authenticated || authenticated.user.perfil !== "Recepcionista") {
@@ -45,6 +48,8 @@ app.get([
     pagina = "animais.html";
   } else if (req.path === "/animais/novo" || req.path === "/cadastro-animal.html") {
     pagina = "cadastro-animal.html";
+  } else if (req.path === "/consultas/novo" || req.path === "/agendar-consulta.html") {
+    pagina = "agendar-consulta.html";
   }
   res.sendFile(path.join(publicDirectory, pagina), (error) => {
     if (error) next(error);
