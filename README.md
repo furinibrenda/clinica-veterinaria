@@ -57,11 +57,6 @@ visual e não está conectada à API. No entanto, a rota `POST /api/register`
 permanece ativa e cria usuários sem exigir autenticação. O seed também cria ou
 atualiza as duas contas de teste listadas acima.
 
-## Documentação
-
-A documentação principal do projeto descreve os requisitos, os casos de uso,
-as regras de negócio e os diagramas do SGCV.
-
 ## Backup
 
 Ao iniciar o servidor, o sistema cria um backup do banco e programa novas
