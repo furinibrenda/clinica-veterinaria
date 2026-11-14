@@ -8,6 +8,7 @@
   -webkit-font-smoothing: antialiased;
   --color-primary: #74558f;
   --color-primary-dark: #5b3f75;
+  --color-primary-soft: #f3eef7;
   --color-text: #302b35;
   --color-muted: #716b78;
   --color-border: #e5dfeb;
@@ -15,6 +16,7 @@
   --color-background: #f7f5fa;
   --color-alert: #a04458;
   --color-success: #3f765f;
+  --shadow-card: 0 12px 32px rgb(48 43 53 / 7%);
 }
 
 * {
@@ -52,12 +54,30 @@ a:focus-visible {
 }
 
 .login-sidebar {
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   padding: 38px clamp(28px, 5vw, 68px);
   color: #fff;
-  background: var(--color-primary);
+  background:
+    radial-gradient(ellipse at 12% 100%, rgb(255 255 255 / 9%), transparent 48%),
+    linear-gradient(145deg, #80649a, #684a82);
+}
+
+.login-sidebar::before {
+  position: absolute;
+  top: -150px;
+  right: -200px;
+  width: 440px;
+  height: 440px;
+  border: 1px solid rgb(255 255 255 / 13%);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 28px rgb(255 255 255 / 4%),
+    0 0 0 58px rgb(255 255 255 / 3%);
+  content: "";
 }
 
 .brand {
@@ -83,9 +103,28 @@ a:focus-visible {
 }
 
 .sidebar-copy {
+  position: relative;
   max-width: 420px;
   margin: auto 0;
   padding: 64px 0;
+}
+
+.clinic-brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.clinic-brand-icon {
+  width: 48px;
+  height: 48px;
+  flex: 0 0 auto;
+  padding: 8px;
+  border: 1px solid rgb(255 255 255 / 30%);
+  border-radius: 14px;
+  fill: currentColor;
+  background: rgb(255 255 255 / 12%);
 }
 
 .eyebrow {
@@ -102,15 +141,15 @@ a:focus-visible {
 
 .sidebar-copy h1 {
   max-width: 420px;
-  margin: 0 0 14px;
+  margin: 0;
   font-size: clamp(36px, 3.8vw, 52px);
-  font-weight: 600;
-  letter-spacing: -0.035em;
+  font-weight: 650;
+  letter-spacing: -0.045em;
   line-height: 1.08;
 }
 
 .sidebar-tagline {
-  margin: 0 0 22px;
+  margin: 0 0 18px;
   color: #f0eaf5;
   font-size: 17px;
   line-height: 1.5;
@@ -137,16 +176,22 @@ a:focus-visible {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 48px 32px 24px;
+  padding: 40px clamp(24px, 5vw, 64px);
 }
 
 .login-card {
   width: min(100%, 400px);
   margin: auto;
+  padding: clamp(26px, 4vw, 38px);
+  border: 1px solid rgb(229 223 235 / 85%);
+  border-radius: 14px;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
 }
 
 .login-card:has(.signed-in-view:not([hidden])) {
   width: min(100%, 560px);
+  padding: clamp(26px, 4vw, 40px);
 }
 
 .mobile-brand {
@@ -156,7 +201,7 @@ a:focus-visible {
 }
 
 .form-heading {
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 }
 
 .form-heading h1,
@@ -234,14 +279,15 @@ a:focus-visible {
 .field select,
 .field textarea {
   width: 100%;
-  min-height: 46px;
-  padding: 10px 12px;
+  min-height: 48px;
+  padding: 11px 14px;
   border: 1px solid var(--color-border);
-  border-radius: 5px;
+  border-radius: 8px;
   outline: none;
   color: var(--color-text);
   background: var(--color-surface);
   font-size: 14px;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
 }
 
 .field select:invalid {
@@ -262,26 +308,31 @@ a:focus-visible {
 .field select:focus,
 .field textarea:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgb(116 85 143 / 12%);
+  box-shadow: 0 0 0 3px rgb(116 85 143 / 13%);
 }
 
 .primary-button,
 .secondary-button {
-  min-height: 46px;
+  min-height: 48px;
   border: 1px solid var(--color-primary);
-  border-radius: 5px;
+  border-radius: 8px;
   font-size: 14px;
   font-weight: 650;
+  transition: background-color 150ms ease, border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
 }
 
 .primary-button {
   margin-top: 5px;
   color: #fff;
   background: var(--color-primary);
+  box-shadow: 0 4px 10px rgb(91 63 117 / 18%);
 }
 
 .primary-button:hover {
+  border-color: var(--color-primary-dark);
   background: var(--color-primary-dark);
+  box-shadow: 0 6px 14px rgb(91 63 117 / 22%);
+  transform: translateY(-1px);
 }
 
 .primary-button:disabled {
@@ -304,16 +355,19 @@ a:focus-visible {
 }
 
 .register-client-link {
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-top: 22px;
-  color: #fff;
-  background: var(--color-primary);
+  color: var(--color-primary-dark);
+  background: var(--color-primary-soft);
   text-decoration: none;
 }
 
 .register-client-link:hover {
-  background: var(--color-primary-dark);
+  border-color: #d3c4df;
+  background: #ece4f2;
+  transform: translateY(-1px);
 }
 
 .register-client-link[hidden] {
@@ -321,7 +375,7 @@ a:focus-visible {
 }
 
 .secondary-button:hover {
-  background: #f2edf6;
+  background: var(--color-primary-soft);
 }
 
 .form-message {
@@ -351,10 +405,9 @@ a:focus-visible {
 }
 
 .signed-in-actions .register-client-link {
-  min-height: 46px;
+  min-height: 52px;
   margin: 0;
-  padding: 8px 12px;
-  text-align: center;
+  padding: 10px 14px;
 }
 
 .signed-in-view > #logout-button {
@@ -387,14 +440,16 @@ a:focus-visible {
 }
 
 .client-header {
+  min-height: 76px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
   padding: 18px clamp(20px, 5vw, 64px);
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid rgb(229 223 235 / 75%);
   color: var(--color-primary);
   background: var(--color-surface);
+  box-shadow: 0 2px 10px rgb(48 43 53 / 3%);
 }
 
 .client-back-link {
@@ -409,12 +464,12 @@ a:focus-visible {
 }
 
 .client-back-arrow {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   display: inline-grid;
   place-items: center;
   border: 1px solid var(--color-border);
-  border-radius: 50%;
+  border-radius: 12px;
   color: var(--color-primary);
   background: var(--color-surface);
   font-size: 24px;
@@ -424,13 +479,14 @@ a:focus-visible {
 }
 
 .client-back-arrow:hover {
-  background: var(--color-background);
+  border-color: #d3c4df;
+  background: var(--color-primary-soft);
   transform: translateX(-2px);
 }
 
 .client-main {
   width: min(100% - 40px, 820px);
-  margin: 48px auto;
+  margin: 44px auto;
 }
 
 .client-main:has(.client-form) {
@@ -444,9 +500,9 @@ a:focus-visible {
 .client-card {
   padding: clamp(24px, 5vw, 42px);
   border: 1px solid var(--color-border);
-  border-radius: 8px;
+  border-radius: 12px;
   background: var(--color-surface);
-  box-shadow: 0 8px 28px rgb(48 43 53 / 5%);
+  box-shadow: var(--shadow-card);
 }
 
 .client-card .form-heading {
@@ -493,7 +549,7 @@ a:focus-visible {
 .client-table-wrap {
   overflow-x: auto;
   border: 1px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: 9px;
 }
 
 .client-table {
@@ -511,8 +567,8 @@ a:focus-visible {
 }
 
 .client-table th {
-  color: var(--color-muted);
-  background: #faf8fb;
+  color: var(--color-primary-dark);
+  background: #f5f1f8;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -521,6 +577,14 @@ a:focus-visible {
 
 .client-table tbody tr:last-child td {
   border-bottom: 0;
+}
+
+.client-table tbody tr {
+  transition: background-color 120ms ease;
+}
+
+.client-table tbody tr:hover {
+  background: #fbf9fc;
 }
 
 .client-table .empty-row {
@@ -536,7 +600,7 @@ a:focus-visible {
   padding: 4px 8px;
   border-radius: 999px;
   color: var(--color-success);
-  background: #eaf3ee;
+  background: #e9f2ed;
   font-size: 11px;
   font-weight: 650;
 }
@@ -573,7 +637,7 @@ a:focus-visible {
   min-height: 32px;
   padding: 5px 10px;
   border: 1px solid var(--color-alert);
-  border-radius: 5px;
+  border-radius: 7px;
   color: #8d342e;
   background: var(--color-surface);
   font-size: 12px;
@@ -595,7 +659,7 @@ a:focus-visible {
   margin-right: 8px;
   padding: 5px 10px;
   border: 1px solid var(--color-primary);
-  border-radius: 5px;
+  border-radius: 7px;
   color: var(--color-primary);
   background: var(--color-surface);
   font-size: 12px;
@@ -611,6 +675,10 @@ a:focus-visible {
   width: min(calc(100% - 32px), 560px);
   max-width: none;
   margin: auto;
+  padding: 28px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-card);
 }
 
 .appointment-dialog::backdrop {
@@ -636,7 +704,7 @@ a:focus-visible {
 .visit-detail {
   padding: 14px;
   border: 1px solid var(--color-border);
-  border-radius: 5px;
+  border-radius: 8px;
   background: #faf8fb;
 }
 
