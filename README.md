@@ -57,28 +57,10 @@ visual e não está conectada à API. No entanto, a rota `POST /api/register`
 permanece ativa e cria usuários sem exigir autenticação. O seed também cria ou
 atualiza as duas contas de teste listadas acima.
 
-## Situação dos requisitos
+## Documentação
 
-Resumo da implementação comparada aos requisitos da documentação do projeto:
-
-| Requisito | Situação | Observação |
-|---|---|---|
-| RF-01 — Cadastrar e consultar clientes | Implementado | Cadastro, validação de CPF e busca por nome ou CPF. |
-| RF-02 — Cadastrar animais | Implementado | Exige tutor existente e ativo. |
-| RF-03 — Agendar consultas | Implementado | Valida tutor, animal, veterinário, horário, data futura e disponibilidade. |
-| RF-04 — Alterar consultas | Implementado | Permite alterar data, horário e veterinário de consultas agendadas. |
-| RF-05 — Cancelar consultas | Implementado | Altera o status e mantém o registro. |
-| RF-06 — Consultar agenda | Implementado | Consulta por data e veterinário; permite abrir atendimentos realizados. |
-| RF-07 — Registrar atendimento | Implementado | Restrito ao perfil Veterinário; atualiza o status da consulta. |
-| RF-08 — Registrar diagnóstico | Implementado | Diagnóstico obrigatório para concluir o atendimento. |
-| RF-09 — Autenticar usuário | Implementado | Login com mensagem de erro genérica para credenciais inválidas. |
-| RF-10 — Inativar clientes e animais | Implementado | Inativação lógica, bloqueada quando há consulta agendada. |
-| RF-11 — Registrar adendo | Implementado | Mantém o diagnóstico original e registra autoria e data. |
-| RNF-01 — Controle de acesso por perfil | Implementado | Rotas e páginas restringem operações conforme o perfil. |
-| RNF-02 — Segurança das credenciais | Implementado | Hash bcrypt, senha mínima de 8 caracteres e sessão com expiração por inatividade. |
-| RNF-03 — Desempenho | Não verificado | Não há medição que comprove o limite de 5 segundos com 10 usuários. |
-| RNF-04 — Disponibilidade | Não verificado | A meta de 99% não foi medida. |
-| RNF-05 — Backup e recuperação | Parcial | Backup diário e retenção das sete cópias mais recentes implementados; restauração pendente. |
+A documentação principal do projeto descreve os requisitos, os casos de uso,
+as regras de negócio e os diagramas do SGCV.
 
 ## Backup
 
