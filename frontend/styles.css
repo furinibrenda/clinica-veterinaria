@@ -386,6 +386,26 @@ a:focus-visible {
   text-decoration: underline;
 }
 
+.client-back-arrow {
+  width: 42px;
+  height: 42px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  color: var(--color-primary);
+  background: var(--color-surface);
+  font-size: 24px;
+  line-height: 1;
+  text-decoration: none;
+  transition: background-color 150ms ease, transform 150ms ease;
+}
+
+.client-back-arrow:hover {
+  background: var(--color-background);
+  transform: translateX(-2px);
+}
+
 .client-main {
   width: min(100% - 40px, 820px);
   margin: 48px auto;
