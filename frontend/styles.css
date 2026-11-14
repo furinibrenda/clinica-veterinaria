@@ -138,6 +138,14 @@ a:focus-visible {
   margin: auto;
 }
 
+.login-brand-name {
+  margin: 0 0 28px;
+  color: var(--color-primary);
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+}
+
 .mobile-brand {
   display: none;
   margin-bottom: 48px;
